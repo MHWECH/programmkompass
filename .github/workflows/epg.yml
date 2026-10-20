@@ -42,7 +42,11 @@ jobs:
           EPG_BEST_URL: ${{ secrets.EPG_BEST_URL }}
         run: |
           if [ -z "$EPG_BEST_URL" ]; then echo "Kein EPG_BEST_URL gesetzt – übersprungen"; exit 0; fi
-          curl -sfL --retry 3 "$EPG_BEST_URL" -o extra.xml || { echo "Download fehlgeschlagen – übersprungen"; exit 0; }
+          URL=$(printf '%s' "$EPG_BEST_URL" | tr -d '[:space:]')
+          code=$(curl -sL --retry 3 -A "Mozilla/5.0" -o extra.xml -w '%{http_code} %{content_type} %{size_download}' "$URL" || echo "curl-Fehler $?")
+          echo "Antwort epg.best: $code"
+          head -c 200 extra.xml | tr -d '\000' | sed 's/^/  Anfang: /'; echo
+          case "$code" in 200*) ;; *) echo "Download fehlgeschlagen – übersprungen"; exit 0;; esac
           node scripts/merge-extra.mjs extra.xml site/guide.xml
 
       - name: Ergebnis prüfen
