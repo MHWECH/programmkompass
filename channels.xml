@@ -13,7 +13,7 @@
   <channel site="web.magentatv.de" site_id="479" lang="de" xmltv_id="alpha">ARD alpha</channel>
   <channel site="web.magentatv.de" site_id="387" lang="de" xmltv_id="kika">KiKA</channel>
   <channel site="web.magentatv.de" site_id="407" lang="de" xmltv_id="br">BR Fernsehen</channel>
-  <channel site="teleboy.ch" site_id="338" lang="de" xmltv_id="wdr">WDR Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="167" lang="de" xmltv_id="wdr">WDR Fernsehen</channel>
   <channel site="web.magentatv.de" site_id="377" lang="de" xmltv_id="ndr">NDR Fernsehen</channel>
   <channel site="web.magentatv.de" site_id="398" lang="de" xmltv_id="swr">SWR Fernsehen</channel>
   <channel site="web.magentatv.de" site_id="386" lang="de" xmltv_id="hr">hr-fernsehen</channel>
@@ -53,7 +53,7 @@
   <channel site="tv.blue.ch" site_id="302" lang="de" xmltv_id="orf2">ORF 2</channel>
   <channel site="tvheute.at" site_id="orf_iii" lang="de" xmltv_id="orf3">ORF III</channel>
   <channel site="tv.blue.ch" site_id="1889" lang="de" xmltv_id="orfs">ORF SPORT +</channel>
-  <channel site="teleboy.ch" site_id="637" lang="de" xmltv_id="servus">ServusTV</channel>
+  <channel site="tvheute.at" site_id="servustv" lang="de" xmltv_id="servus">ServusTV</channel>
   <channel site="tvheute.at" site_id="atv" lang="de" xmltv_id="atv">ATV</channel>
   <channel site="tvheute.at" site_id="atv2" lang="de" xmltv_id="atv2">ATV2</channel>
   <channel site="tvheute.at" site_id="puls_4" lang="de" xmltv_id="puls4">PULS 4</channel>
@@ -72,8 +72,8 @@
   <channel site="tv.blue.ch" site_id="634" lang="de" xmltv_id="tv24">TV24</channel>
   <channel site="tv.blue.ch" site_id="665" lang="de" xmltv_id="tv25">TV25</channel>
   <channel site="tv.blue.ch" site_id="374" lang="de" xmltv_id="s1ch">S1</channel>
-  <channel site="teleboy.ch" site_id="354" lang="de" xmltv_id="p7ch">ProSieben Schweiz</channel>
-  <channel site="teleboy.ch" site_id="360" lang="de" xmltv_id="s1chs">SAT.1 Schweiz</channel>
+  <channel site="tv.blue.ch" site_id="322" lang="de" xmltv_id="p7ch">ProSieben Schweiz</channel>
+  <channel site="tv.blue.ch" site_id="375" lang="de" xmltv_id="s1chs">SAT.1 Schweiz</channel>
   <channel site="tv.blue.ch" site_id="585" lang="de" xmltv_id="telez">TeleZüri</channel>
   <channel site="tv.blue.ch" site_id="572" lang="de" xmltv_id="teleb">TeleBärn</channel>
   <channel site="tv.blue.ch" site_id="586" lang="de" xmltv_id="telebs">Telebasel</channel>
