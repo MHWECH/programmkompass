@@ -1,0 +1,62 @@
+name: Programmdaten aktualisieren
+
+on:
+  schedule:
+    - cron: "15 3 * * *"   # täglich ca. 05:15 Uhr MESZ / 04:15 Uhr MEZ
+  workflow_dispatch:        # manuell starten über „Run workflow“
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: EPG-Grabber (iptv-org/epg) holen
+        run: |
+          git clone --depth 1 -b master https://github.com/iptv-org/epg.git epg
+          cd epg && npm install --no-audit --no-fund --loglevel=error
+
+      - name: Programmdaten für 7 Tage laden
+        run: |
+          mkdir -p site
+          cd epg && npm run grab --- --channels=../channels.xml --output=../site/guide.xml --days=7 --maxConnections=4
+
+      - name: Ergebnis prüfen
+        run: |
+          n=$(grep -c "<programme" site/guide.xml || true)
+          echo "Sendungen: $n"
+          if [ "$n" -lt 1000 ]; then echo "Zu wenige Sendungen – Quelle blockiert?"; exit 1; fi
+
+      - name: Seite zusammenstellen
+        run: cp index.html site/
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

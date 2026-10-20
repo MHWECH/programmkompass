@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Senderliste für den Programmkompass: xmltv_id = Sender-ID in der App -->
+<channels>
+  <channel site="web.magentatv.de" site_id="373" lang="de" xmltv_id="ard">Das Erste</channel>
+  <channel site="web.magentatv.de" site_id="408" lang="de" xmltv_id="zdf">ZDF</channel>
+  <channel site="web.magentatv.de" site_id="392" lang="de" xmltv_id="3sat">3sat</channel>
+  <channel site="web.magentatv.de" site_id="394" lang="de" xmltv_id="arte">arte</channel>
+  <channel site="web.magentatv.de" site_id="371" lang="de" xmltv_id="phoenix">phoenix</channel>
+  <channel site="web.magentatv.de" site_id="400" lang="de" xmltv_id="ts24">tagesschau24</channel>
+  <channel site="web.magentatv.de" site_id="391" lang="de" xmltv_id="zdfneo">ZDFneo</channel>
+  <channel site="web.magentatv.de" site_id="378" lang="de" xmltv_id="zdfinfo">ZDFinfo</channel>
+  <channel site="web.magentatv.de" site_id="402" lang="de" xmltv_id="one">ONE</channel>
+  <channel site="web.magentatv.de" site_id="479" lang="de" xmltv_id="alpha">ARD alpha</channel>
+  <channel site="web.magentatv.de" site_id="387" lang="de" xmltv_id="kika">KiKA</channel>
+  <channel site="web.magentatv.de" site_id="407" lang="de" xmltv_id="br">BR Fernsehen</channel>
+  <channel site="teleboy.ch" site_id="338" lang="de" xmltv_id="wdr">WDR Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="377" lang="de" xmltv_id="ndr">NDR Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="398" lang="de" xmltv_id="swr">SWR Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="386" lang="de" xmltv_id="hr">hr-fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="370" lang="de" xmltv_id="mdr">MDR Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="384" lang="de" xmltv_id="rbb">rbb Fernsehen</channel>
+  <channel site="web.magentatv.de" site_id="404" lang="de" xmltv_id="rtl">RTL</channel>
+  <channel site="web.magentatv.de" site_id="381" lang="de" xmltv_id="sat1">SAT.1</channel>
+  <channel site="web.magentatv.de" site_id="374" lang="de" xmltv_id="pro7">ProSieben</channel>
+  <channel site="web.magentatv.de" site_id="385" lang="de" xmltv_id="vox">VOX</channel>
+  <channel site="web.magentatv.de" site_id="405" lang="de" xmltv_id="k1">kabel eins</channel>
+  <channel site="web.magentatv.de" site_id="382" lang="de" xmltv_id="rtl2">RTLZWEI</channel>
+  <channel site="web.magentatv.de" site_id="395" lang="de" xmltv_id="nitro">NITRO</channel>
+  <channel site="web.magentatv.de" site_id="380" lang="de" xmltv_id="sixx">sixx</channel>
+  <channel site="web.magentatv.de" site_id="338" lang="de" xmltv_id="sat1g">SAT.1 Gold</channel>
+  <channel site="web.magentatv.de" site_id="396" lang="de" xmltv_id="p7maxx">ProSieben MAXX</channel>
+  <channel site="web.magentatv.de" site_id="573" lang="de" xmltv_id="k1doku">kabel eins Doku</channel>
+  <channel site="web.magentatv.de" site_id="542" lang="de" xmltv_id="rtlup">RTLup</channel>
+  <channel site="web.magentatv.de" site_id="3930" lang="de" xmltv_id="voxup">VOXup</channel>
+  <channel site="web.magentatv.de" site_id="429" lang="de" xmltv_id="dmax">DMAX</channel>
+  <channel site="web.magentatv.de" site_id="383" lang="de" xmltv_id="tlc">TLC</channel>
+  <channel site="web.magentatv.de" site_id="48" lang="de" xmltv_id="tele5">Tele 5</channel>
+  <channel site="web.magentatv.de" site_id="50" lang="de" xmltv_id="cc">Comedy Central</channel>
+  <channel site="web.magentatv.de" site_id="376" lang="de" xmltv_id="ntv">ntv</channel>
+  <channel site="web.magentatv.de" site_id="375" lang="de" xmltv_id="welt">WELT</channel>
+  <channel site="web.magentatv.de" site_id="401" lang="de" xmltv_id="sport1">SPORT1</channel>
+  <channel site="web.magentatv.de" site_id="389" lang="de" xmltv_id="euro1">Eurosport 1</channel>
+  <channel site="web.magentatv.de" site_id="190" lang="de" xmltv_id="skynews">Sky Sport News</channel>
+  <channel site="web.magentatv.de" site_id="403" lang="de" xmltv_id="superrtl">Super RTL</channel>
+  <channel site="web.magentatv.de" site_id="601" lang="de" xmltv_id="toggo">Toggo plus</channel>
+  <channel site="tv.blue.ch" site_id="291" lang="de" xmltv_id="nick">Nickelodeon</channel>
+  <channel site="web.magentatv.de" site_id="27" lang="de" xmltv_id="disney">Disney Channel</channel>
+  <channel site="web.magentatv.de" site_id="25" lang="de" xmltv_id="deluxe">Deluxe Music</channel>
+  <channel site="web.magentatv.de" site_id="485" lang="de" xmltv_id="bibel">Bibel TV</channel>
+  <channel site="web.magentatv.de" site_id="446" lang="de" xmltv_id="qvc">QVC</channel>
+  <channel site="web.magentatv.de" site_id="451" lang="de" xmltv_id="hse">HSE</channel>
+  <channel site="tvheute.at" site_id="orf1" lang="de" xmltv_id="orf1">ORF 1</channel>
+  <channel site="tv.blue.ch" site_id="302" lang="de" xmltv_id="orf2">ORF 2</channel>
+  <channel site="tvheute.at" site_id="orf_iii" lang="de" xmltv_id="orf3">ORF III</channel>
+  <channel site="tv.blue.ch" site_id="1889" lang="de" xmltv_id="orfs">ORF SPORT +</channel>
+  <channel site="teleboy.ch" site_id="637" lang="de" xmltv_id="servus">ServusTV</channel>
+  <channel site="tvheute.at" site_id="atv" lang="de" xmltv_id="atv">ATV</channel>
+  <channel site="tvheute.at" site_id="atv2" lang="de" xmltv_id="atv2">ATV2</channel>
+  <channel site="tvheute.at" site_id="puls_4" lang="de" xmltv_id="puls4">PULS 4</channel>
+  <channel site="tv.blue.ch" site_id="1602" lang="de" xmltv_id="puls24">PULS 24</channel>
+  <channel site="tvheute.at" site_id="oe24tv" lang="de" xmltv_id="oe24">oe24.TV</channel>
+  <channel site="web.magentatv.de" site_id="374" lang="de" xmltv_id="p7at">ProSieben Austria</channel>
+  <channel site="web.magentatv.de" site_id="381" lang="de" xmltv_id="s1at">SAT.1 Österreich</channel>
+  <channel site="web.magentatv.de" site_id="405" lang="de" xmltv_id="k1at">kabel eins Austria</channel>
+  <channel site="tv.blue.ch" site_id="399" lang="de" xmltv_id="srf1">SRF 1</channel>
+  <channel site="tv.blue.ch" site_id="401" lang="de" xmltv_id="srf2">SRF zwei</channel>
+  <channel site="tv.blue.ch" site_id="400" lang="de" xmltv_id="srfi">SRF info</channel>
+  <channel site="tv.blue.ch" site_id="4" lang="de" xmltv_id="3plus">3+</channel>
+  <channel site="tv.blue.ch" site_id="7" lang="de" xmltv_id="4plus">4+</channel>
+  <channel site="tv.blue.ch" site_id="8" lang="de" xmltv_id="5plus">5+</channel>
+  <channel site="tv.blue.ch" site_id="1469" lang="de" xmltv_id="6plus">6+</channel>
+  <channel site="tv.blue.ch" site_id="634" lang="de" xmltv_id="tv24">TV24</channel>
+  <channel site="tv.blue.ch" site_id="665" lang="de" xmltv_id="tv25">TV25</channel>
+  <channel site="tv.blue.ch" site_id="374" lang="de" xmltv_id="s1ch">S1</channel>
+  <channel site="teleboy.ch" site_id="354" lang="de" xmltv_id="p7ch">ProSieben Schweiz</channel>
+  <channel site="teleboy.ch" site_id="360" lang="de" xmltv_id="s1chs">SAT.1 Schweiz</channel>
+  <channel site="tv.blue.ch" site_id="585" lang="de" xmltv_id="telez">TeleZüri</channel>
+  <channel site="tv.blue.ch" site_id="572" lang="de" xmltv_id="teleb">TeleBärn</channel>
+  <channel site="tv.blue.ch" site_id="586" lang="de" xmltv_id="telebs">Telebasel</channel>
+  <channel site="web.magentatv.de" site_id="576" lang="de" xmltv_id="skyone">Sky One</channel>
+  <channel site="web.magentatv.de" site_id="264" lang="de" xmltv_id="skyatl">Sky Atlantic</channel>
+  <channel site="web.magentatv.de" site_id="5577" lang="de" xmltv_id="skyshow">Sky Showcase</channel>
+  <channel site="web.magentatv.de" site_id="4924" lang="de" xmltv_id="skycrime">Sky Crime</channel>
+  <channel site="tv.blue.ch" site_id="1794" lang="de" xmltv_id="skycom">Sky Comedy</channel>
+  <channel site="web.magentatv.de" site_id="3756" lang="de" xmltv_id="skyrep">Sky Replay</channel>
+  <channel site="web.magentatv.de" site_id="5143" lang="de" xmltv_id="skydoc">Sky Documentaries</channel>
+  <channel site="web.magentatv.de" site_id="5142" lang="de" xmltv_id="skynat">Sky Nature</channel>
+  <channel site="web.magentatv.de" site_id="195" lang="de" xmltv_id="scprem">Sky Cinema Premieren</channel>
+  <channel site="web.magentatv.de" site_id="6210" lang="de" xmltv_id="schigh">Sky Cinema Highlights</channel>
+  <channel site="web.magentatv.de" site_id="40" lang="de" xmltv_id="scact">Sky Cinema Action</channel>
+  <channel site="web.magentatv.de" site_id="572" lang="de" xmltv_id="scfam">Sky Cinema Family</channel>
+  <channel site="web.magentatv.de" site_id="200" lang="de" xmltv_id="sccla">Sky Cinema Classics</channel>
+  <channel site="web.magentatv.de" site_id="42" lang="de" xmltv_id="ssbl">Sky Sport Bundesliga</channel>
+  <channel site="web.magentatv.de" site_id="5555" lang="de" xmltv_id="sspl">Sky Sport Premier League</channel>
+  <channel site="web.magentatv.de" site_id="4889" lang="de" xmltv_id="ssf1">Sky Sport F1</channel>
+  <channel site="web.magentatv.de" site_id="31" lang="de" xmltv_id="sstop">Sky Sport Top Event</channel>
+  <channel site="web.magentatv.de" site_id="198" lang="de" xmltv_id="sstennis">Sky Sport Tennis</channel>
+  <channel site="web.magentatv.de" site_id="5558" lang="de" xmltv_id="ssgolf">Sky Sport Golf</channel>
+  <channel site="tv.blue.ch" site_id="1452" lang="de" xmltv_id="dazn1">DAZN 1</channel>
+  <channel site="web.magentatv.de" site_id="18" lang="de" xmltv_id="euro2">Eurosport 2</channel>
+  <channel site="tv.blue.ch" site_id="1543" lang="de" xmltv_id="mysports">MySports One</channel>
+  <channel site="tv.blue.ch" site_id="1221" lang="de" xmltv_id="bluezoom">blue Zoom</channel>
+  <channel site="web.magentatv.de" site_id="471" lang="de" xmltv_id="13th">13th Street</channel>
+  <channel site="web.magentatv.de" site_id="462" lang="de" xmltv_id="univ">Universal TV</channel>
+  <channel site="web.magentatv.de" site_id="458" lang="de" xmltv_id="wtvs">Warner TV Serie</channel>
+  <channel site="web.magentatv.de" site_id="540" lang="de" xmltv_id="wtvf">Warner TV Film</channel>
+  <channel site="web.magentatv.de" site_id="461" lang="de" xmltv_id="wtvc">Warner TV Comedy</channel>
+  <channel site="web.magentatv.de" site_id="110" lang="de" xmltv_id="axnb">AXN Black</channel>
+  <channel site="web.magentatv.de" site_id="188" lang="de" xmltv_id="axnw">AXN White</channel>
+  <channel site="web.magentatv.de" site_id="216" lang="de" xmltv_id="rtlcrime">RTL Crime</channel>
+  <channel site="web.magentatv.de" site_id="209" lang="de" xmltv_id="rtlpass">RTL Passion</channel>
+  <channel site="web.magentatv.de" site_id="227" lang="de" xmltv_id="rtlliv">RTL Living</channel>
+  <channel site="web.magentatv.de" site_id="224" lang="de" xmltv_id="s1emo">SAT.1 emotions</channel>
+  <channel site="web.magentatv.de" site_id="259" lang="de" xmltv_id="p7fun">ProSieben FUN</channel>
+  <channel site="web.magentatv.de" site_id="157" lang="de" xmltv_id="k1cla">kabel eins CLASSICS</channel>
+  <channel site="web.magentatv.de" site_id="658" lang="de" xmltv_id="romance">Romance TV</channel>
+  <channel site="web.magentatv.de" site_id="134" lang="de" xmltv_id="heimat">Heimatkanal</channel>
+  <channel site="web.magentatv.de" site_id="137" lang="de" xmltv_id="kinowelt">Kinowelt TV</channel>
+  <channel site="web.magentatv.de" site_id="5141" lang="de" xmltv_id="cni">Crime + Investigation</channel>
+  <channel site="web.magentatv.de" site_id="162" lang="de" xmltv_id="history">HISTORY Channel</channel>
+  <channel site="web.magentatv.de" site_id="6730" lang="de" xmltv_id="natgeo">National Geographic</channel>
+  <channel site="web.magentatv.de" site_id="23" lang="de" xmltv_id="disc">Discovery Channel</channel>
+  <channel site="web.magentatv.de" site_id="105" lang="de" xmltv_id="animal">Animal Planet</channel>
+  <channel site="web.magentatv.de" site_id="4406" lang="de" xmltv_id="spgesch">Spiegel Geschichte</channel>
+  <channel site="tv.blue.ch" site_id="1076" lang="de" xmltv_id="spwiss">Spiegel TV Wissen</channel>
+  <channel site="web.magentatv.de" site_id="4512" lang="de" xmltv_id="cartoon">Cartoon Network</channel>
+  <channel site="tv.blue.ch" site_id="131" lang="de" xmltv_id="djunior">Disney Junior</channel>
+  <channel site="web.magentatv.de" site_id="4379" lang="de" xmltv_id="nickjr">Nick Jr.</channel>
+  <channel site="tv.blue.ch" site_id="224" lang="de" xmltv_id="junior">Junior</channel>
+  <channel site="web.magentatv.de" site_id="5397" lang="de" xmltv_id="classica">Classica</channel>
+</channels>

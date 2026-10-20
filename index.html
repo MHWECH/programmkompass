@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>Programmkompass</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: sticky control deck on top, then one of three views (Jetzt-Liste, Zeitraster mit fixierter Senderspalte, 20:15-Abendübersicht); Details als Seitenleiste bzw. Bottom-Sheet. */
+:root{
+  --bg:#f1f3f7; --surface:#ffffff; --surface2:#e7eaf1; --ink:#141821; --muted:#596175; --line:#d6dae4;
+  --accent:#2445d6; --accent-soft:#e3e8ff; --accent-ink:#ffffff;
+  --live:#d9342a; --pay:#8a6106; --pay-bg:#fbefcf; --ok:#1f7a4d;
+  --shadow:0 10px 30px rgba(20,24,33,.14);
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --chw:176px; --rowh:66px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1016; --surface:#161922; --surface2:#1e2230; --ink:#eceef5; --muted:#99a0b3; --line:#2a2f3e;
+  --accent:#8199ff; --accent-soft:#232a4a; --accent-ink:#0e1016;
+  --live:#ff5c50; --pay:#e8bd52; --pay-bg:#2d2511; --ok:#4fc58b; --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1016; --surface:#161922; --surface2:#1e2230; --ink:#eceef5; --muted:#99a0b3; --line:#2a2f3e;
+  --accent:#8199ff; --accent-soft:#232a4a; --accent-ink:#0e1016;
+  --live:#ff5c50; --pay:#e8bd52; --pay-bg:#2d2511; --ok:#4fc58b; --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* Deck */
+.deck{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--bg);border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;gap:14px;padding-block:12px 8px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;min-width:0}
+.brand h1{font-family:var(--f-display);font-stretch:72%;font-weight:800;font-size:28px;letter-spacing:-.01em;margin:0;line-height:1}
+.brand .clock{font-family:var(--f-mono);font-weight:700;font-size:15px;color:var(--live);display:flex;align-items:center;gap:6px}
+.brand .clock::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--live);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.brand .clock::before{animation:none}}
+.search{position:relative;flex:1 1 260px;max-width:420px}
+.search input{width:100%;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);padding:0 12px 0 36px}
+.search svg{position:absolute;left:11px;top:11px;width:18px;height:18px;color:var(--muted)}
+.tbtn{height:40px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:inline-flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap}
+.tbtn:hover{border-color:var(--accent)}
+.tbtn .n{font-family:var(--f-mono);font-size:12px;background:var(--accent);color:var(--accent-ink);border-radius:20px;padding:1px 7px}
+.row2{display:flex;align-items:center;gap:12px;padding-block:4px 10px;flex-wrap:wrap}
+.tabs{display:flex;background:var(--surface2);border-radius:12px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:15px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1 1 auto}
+.days::-webkit-scrollbar{display:none}
+.days button{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:5px 10px;line-height:1.15;text-align:left;white-space:nowrap}
+.days button b{display:block;font-size:13px}
+.days button span{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.days button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.days button[aria-pressed="true"] span{color:inherit;opacity:.75}
+.days[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.filters{display:flex;gap:8px;align-items:center;overflow-x:auto;padding-block:0 12px;scrollbar-width:thin}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:none;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 11px;font-weight:700;font-size:13px;white-space:nowrap;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.chip{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.sep{width:1px;height:24px;background:var(--line);flex:none}
+
+/* Common bits */
+main{padding-block:16px 40px}
+.note{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:14px;max-width:80ch}
+.note b{color:var(--ink)}
+.logo{flex:none;width:44px;height:30px;border-radius:7px;display:grid;place-items:center;font-family:var(--f-display);font-stretch:68%;font-weight:800;font-size:13px;letter-spacing:.01em;color:#fff;line-height:1;text-align:center;padding:0 3px;overflow:hidden}
+.badge{font-family:var(--f-mono);font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:1px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.pay{background:var(--pay-bg);color:var(--pay);border-color:transparent}
+.badge.live{background:var(--live);color:#fff;border-color:transparent}
+.time{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-weight:700}
+.star{border:0;background:transparent;padding:4px;color:var(--muted);line-height:0;border-radius:6px}
+.star[aria-pressed="true"]{color:#e0a106}
+.star svg{width:18px;height:18px}
+.empty{padding:40px 0;color:var(--muted);text-align:center}
+.sectionhead{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:20px;margin:22px 0 10px;display:flex;align-items:baseline;gap:10px}
+.sectionhead small{font-family:var(--f-body);font-weight:400;font-size:13px;color:var(--muted);font-stretch:100%}
+
+/* Jetzt */
+.nowgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px}
+.nowcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:start;min-width:0}
+.nowcard .chn{grid-column:2;display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--muted);min-width:0}
+.nowcard .chn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowcard .cur{grid-column:1/4;border:0;background:transparent;text-align:left;padding:0;min-width:0}
+.nowcard .cur .tt{font-weight:700;font-size:16.5px;line-height:1.25;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowcard .cur .meta{font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center;margin-top:2px}
+.bar{height:5px;border-radius:5px;background:var(--surface2);overflow:hidden;margin-top:8px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.nowcard .nxt{grid-column:1/4;border:0;border-top:1px dashed var(--line);background:transparent;text-align:left;padding:8px 0 0;font-size:13.5px;color:var(--muted);display:flex;gap:8px;min-width:0}
+.nowcard .nxt span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
+.nowcard button.cur:hover .tt,.nowcard button.nxt:hover span:last-child{color:var(--accent)}
+
+/* Raster */
+.gridbox{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:auto;height:max(440px,calc(100dvh - 250px));overscroll-behavior:contain}
+.ginner{position:relative}
+.ghead{position:sticky;top:0;z-index:6;display:flex;height:34px;background:var(--surface);border-bottom:1px solid var(--line)}
+.ghead .corner{position:sticky;left:0;z-index:7;width:var(--chw);flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 8px}
+.ghead .corner button{border:1px solid var(--line);background:var(--surface2);border-radius:7px;font-size:12px;font-weight:700;padding:3px 8px}
+.ticks{position:relative;flex:none}
+.ticks span{position:absolute;top:0;height:34px;display:flex;align-items:center;padding-left:6px;font-family:var(--f-mono);font-size:12px;font-weight:700;color:var(--muted);border-left:1px solid var(--line)}
+.ticks span.half{color:transparent;border-left-style:dotted}
+.grow{display:flex;height:var(--rowh);border-bottom:1px solid var(--line)}
+.gch{position:sticky;left:0;z-index:4;width:var(--chw);flex:none;background:var(--surface);border-right:1px solid var(--line);display:flex;align-items:center;gap:8px;padding:0 6px 0 8px;min-width:0}
+.gch .nm{font-weight:700;font-size:13px;line-height:1.15;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;flex:1;min-width:0}
+.gch .nm small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+.track{position:relative;flex:none}
+.pg{position:absolute;top:4px;bottom:4px;border-radius:8px;background:var(--surface2);border:1px solid transparent;padding:5px 8px;text-align:left;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:0}
+.pg:hover{border-color:var(--accent)}
+.pg .t{font-family:var(--f-mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.pg .n{font-weight:700;font-size:13px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg.past{opacity:.5}
+.pg.on{background:var(--accent-soft);border-color:var(--accent)}
+.pg.on .t{color:var(--accent)}
+.pg.hit{outline:2px solid #e0a106}
+.pg.prime{box-shadow:inset 3px 0 0 var(--accent)}
+.pg.tiny{padding:4px 3px}
+.pg.tiny .t{display:none}
+.nowline{position:absolute;top:0;bottom:0;width:2px;background:var(--live);z-index:5;pointer-events:none}
+.nowline::before{content:"";position:sticky;top:30px;display:block;width:10px;height:10px;margin-left:-4px;border-radius:50%;background:var(--live)}
+
+/* 20:15 */
+.primegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.pcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left}
+.pcard:hover{border-color:var(--accent)}
+.pcard .h{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted);min-width:0}
+.pcard .h span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard .tt{font-family:var(--f-display);font-stretch:82%;font-weight:800;font-size:19px;line-height:1.15;text-wrap:balance}
+.pcard .sb{font-size:13px;color:var(--muted)}
+.pcard .ds{font-size:13.5px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pcard .fl{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto}
+.tipps{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.tipp{background:var(--ink);color:var(--bg);border-radius:12px;padding:14px;border:0;text-align:left;display:flex;flex-direction:column;gap:6px}
+.tipp .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+.tipp .tt{font-family:var(--f-display);font-stretch:80%;font-weight:800;font-size:20px;line-height:1.1;text-wrap:balance}
+.tipp .sb{font-size:13px;opacity:.8}
+
+/* Suche */
+.results{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.res{display:grid;grid-template-columns:auto auto 1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;text-align:left;min-width:0}
+.res:hover{border-color:var(--accent)}
+.res .tt{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.res .tt small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;overflow:hidden;text-overflow:ellipsis}
+
+/* Drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,12,18,.45);z-index:50}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:var(--surface);z-index:51;box-shadow:var(--shadow);display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dhead{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dhead .x{margin-left:auto;border:1px solid var(--line);background:var(--surface2);border-radius:9px;width:36px;height:36px;font-size:18px;line-height:1}
+.dbody{padding:18px 16px 28px;overflow:auto;display:flex;flex-direction:column;gap:14px}
+.dbody h2{font-family:var(--f-display);font-stretch:78%;font-weight:800;font-size:30px;line-height:1.05;margin:0;text-wrap:balance}
+.dbody .sub{color:var(--muted);margin-top:-6px}
+.dbody .when{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px}
+.dbody p{margin:0;max-width:65ch}
+.pimg{width:100%;max-width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:var(--surface2)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0}
+.cta{display:flex;gap:8px;flex-wrap:wrap}
+.btn{height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700}
+.btn.ghost{background:transparent;color:var(--accent)}
+.mini{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:12px}
+.mini h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+.mini button{border:0;background:transparent;text-align:left;padding:6px 0;display:flex;gap:12px;font-size:14px;min-width:0}
+.mini button span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini button:hover span:last-child{color:var(--accent)}
+.mlist{display:flex;flex-direction:column;gap:8px}
+.mitem{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.mitem .tt{min-width:0;border:0;background:transparent;text-align:left;padding:0}
+.mitem .tt b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mitem .tt small{color:var(--muted)}
+.mitem .rm{border:1px solid var(--line);background:transparent;border-radius:8px;padding:4px 8px;font-size:12px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;box-shadow:var(--shadow);font-weight:700;max-width:calc(100% - 32px)}
+
+@media (max-width:640px){
+  :root{--chw:104px;--rowh:62px}
+  .brand h1{font-size:24px}
+  .gch .logo{display:none}
+  .nowgrid{grid-template-columns:1fr}
+  .drawer{top:auto;width:100%;max-height:88dvh;border-radius:16px 16px 0 0;padding-left:env(safe-area-inset-left,0px)}
+  .res{grid-template-columns:auto 1fr auto}
+  .res .logo{display:none}
+  .tbtn .lbl{display:none}
+}
+</style>
+
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="wrap">
+    <div class="top">
+      <div class="brand"><h1>Programmkompass</h1><span class="clock" id="clock">--:--</span></div>
+      <label class="search" for="q">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Sendung oder Sender suchen  ( / )" autocomplete="off" aria-label="Sendung oder Sender suchen">
+      </label>
+      <button class="tbtn" id="btnMerk" type="button" aria-label="Merkliste öffnen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg><span class="lbl">Merkliste</span><span class="n" id="merkN">0</span></button>
+      <button class="tbtn" id="btnImport" type="button" title="XMLTV-Datei mit echten Programmdaten laden">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg><span class="lbl">XMLTV laden</span></button>
+      <input type="file" id="file" accept=".xml,.xmltv,text/xml,application/xml" hidden>
+    </div>
+    <div class="row2">
+      <div class="tabs" role="tablist" aria-label="Ansicht">
+        <button role="tab" data-view="jetzt" aria-selected="true">Jetzt</button>
+        <button role="tab" data-view="raster" aria-selected="false">Raster</button>
+        <button role="tab" data-view="prime" aria-selected="false">20:15</button>
+      </div>
+      <div class="days" id="days" aria-label="Tag wählen"></div>
+    </div>
+    <div class="filters" id="filters">
+      <div class="seg" id="fCountry" aria-label="Land">
+        <button data-v="all" aria-pressed="true">Alle</button><button data-v="DE">DE</button><button data-v="AT">AT</button><button data-v="CH">CH</button>
+      </div>
+      <div class="seg" id="fRecv" aria-label="Empfang">
+        <button data-v="all" aria-pressed="true">Alle</button><button data-v="free">Free-TV</button><button data-v="pay">Pay-TV</button>
+      </div>
+      <span class="sep"></span>
+      <button class="chip" id="fFav" aria-pressed="false">★ Favoriten</button>
+      <span id="fCats" style="display:contents"></span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="main"></main>
+<div id="layer"></div>
+
+<script>
+(()=>{
+"use strict";
+/* ---------- Storage ---------- */
+const store={get(k,d){try{const v=localStorage.getItem("pk."+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("pk."+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- Sender (id, Name, Kürzel, Land, Pay, Kategorie, Farbe, Profil) ---------- */
+const CAT={oer:"Öffentlich-rechtlich",privat:"Privat",news:"Nachrichten",sport:"Sport",film:"Film & Serie",doku:"Doku & Wissen",kinder:"Kinder",musik:"Musik & Sonstiges",regional:"Regional"};
+const RAW=[
+// Deutschland – öffentlich-rechtlich
+["ard","Das Erste","ARD","DE",0,"oer","#003480","pubmain"],
+["zdf","ZDF","ZDF","DE",0,"oer","#f27c00","pubmain"],
+["3sat","3sat","3sat","DE AT CH",0,"oer","#c4003c","culture"],
+["arte","arte","arte","DE",0,"oer","#e2481c","culture"],
+["phoenix","phoenix","phx","DE",0,"oer","#1b5aa6","docnews"],
+["ts24","tagesschau24","ts24","DE",0,"news","#0d2c6c","news"],
+["zdfneo","ZDFneo","neo","DE",0,"oer","#4d7a1f","series"],
+["zdfinfo","ZDFinfo","info","DE",0,"doku","#00658f","doku"],
+["one","ONE","ONE","DE",0,"oer","#c2185b","series"],
+["alpha","ARD alpha","alpha","DE",0,"doku","#3b4c9b","doku"],
+["kika","KiKA","KiKA","DE",0,"kinder","#7cb518","kids"],
+["br","BR Fernsehen","BR","DE",0,"regional","#0063b4","regional"],
+["wdr","WDR Fernsehen","WDR","DE",0,"regional","#00345e","regional"],
+["ndr","NDR Fernsehen","NDR","DE",0,"regional","#0f4b8f","regional"],
+["swr","SWR Fernsehen","SWR","DE",0,"regional","#18324f","regional"],
+["hr","hr-fernsehen","hr","DE",0,"regional","#0068b4","regional"],
+["mdr","MDR Fernsehen","MDR","DE",0,"regional","#0b3f80","regional"],
+["rbb","rbb Fernsehen","rbb","DE",0,"regional","#c0003c","regional"],
+// Deutschland – privat
+["rtl","RTL","RTL","DE",0,"privat","#e1001a","privmain"],
+["sat1","SAT.1","SAT.1","DE",0,"privat","#2a5bd7","privmain"],
+["pro7","ProSieben","Pro7","DE",0,"privat","#c8102e","pro7"],
+["vox","VOX","VOX","DE",0,"privat","#b10f2e","vox"],
+["k1","kabel eins","k1","DE",0,"privat","#00508e","k1"],
+["rtl2","RTLZWEI","RTL2","DE",0,"privat","#00387b","reality"],
+["nitro","NITRO","NITRO","DE",0,"privat","#9b1c1c","series"],
+["sixx","sixx","sixx","DE",0,"privat","#d6006f","series"],
+["sat1g","SAT.1 Gold","S1G","DE",0,"privat","#b8860b","series"],
+["p7maxx","ProSieben MAXX","MAXX","DE",0,"privat","#444","series"],
+["k1doku","kabel eins Doku","k1D","DE",0,"doku","#00699a","doku"],
+["rtlup","RTLup","RTLup","DE",0,"privat","#e3004f","series"],
+["voxup","VOXup","VOXup","DE",0,"privat","#8b1a3a","series"],
+["dmax","DMAX","DMAX","DE",0,"doku","#1d1d1d","dmax"],
+["tlc","TLC","TLC","DE",0,"privat","#6a1b9a","reality"],
+["tele5","Tele 5","TELE5","DE",0,"film","#2f6f4f","film"],
+["cc","Comedy Central","CC","DE",0,"film","#f2c200","sitcom"],
+["ntv","ntv","ntv","DE",0,"news","#c4001e","news"],
+["welt","WELT","WELT","DE",0,"news","#003a70","news"],
+["sport1","SPORT1","SPORT1","DE",0,"sport","#1f3e97","sport"],
+["euro1","Eurosport 1","ES1","DE",0,"sport","#131b5b","sport"],
+["skynews","Sky Sport News","SSN","DE AT",0,"sport","#bf1e2e","sportnews"],
+["superrtl","Super RTL","SRTL","DE",0,"kinder","#0098d9","kids"],
+["toggo","Toggo plus","TOGGO","DE",0,"kinder","#ff7f00","kids"],
+["nick","Nickelodeon","nick","DE",0,"kinder","#f57b0a","kids"],
+["disney","Disney Channel","Disney","DE",0,"kinder","#113ccf","kids"],
+["deluxe","Deluxe Music","DLX","DE",0,"musik","#222","music"],
+["bibel","Bibel TV","Bibel","DE",0,"musik","#3a6ea5","church"],
+["qvc","QVC","QVC","DE",0,"musik","#6b1f7c","shop"],
+["hse","HSE","HSE","DE",0,"musik","#e3006d","shop"],
+// Österreich
+["orf1","ORF 1","ORF1","AT",0,"oer","#cf1020","orf1"],
+["orf2","ORF 2","ORF2","AT",0,"oer","#cf1020","pubmain"],
+["orf3","ORF III","ORF3","AT",0,"oer","#cf1020","culture"],
+["orfs","ORF SPORT +","ORFS+","AT",0,"sport","#cf1020","sport"],
+["servus","ServusTV","Servus","AT",0,"privat","#4b3a2a","servus"],
+["atv","ATV","ATV","AT",0,"privat","#003f7f","reality"],
+["atv2","ATV2","ATV2","AT",0,"privat","#336699","series"],
+["puls4","PULS 4","PULS4","AT",0,"privat","#00a3e0","privmain"],
+["puls24","PULS 24","PULS24","AT",0,"news","#ff5a00","news"],
+["oe24","oe24.TV","oe24","AT",0,"news","#d40000","news"],
+["p7at","ProSieben Austria","P7 AT","AT",0,"privat","#c8102e","pro7"],
+["s1at","SAT.1 Österreich","S1 AT","AT",0,"privat","#2a5bd7","privmain"],
+["k1at","kabel eins Austria","k1 AT","AT",0,"privat","#00508e","k1"],
+// Schweiz
+["srf1","SRF 1","SRF1","CH",0,"oer","#af001e","pubmain"],
+["srf2","SRF zwei","SRF2","CH",0,"oer","#af001e","srf2"],
+["srfi","SRF info","SRFi","CH",0,"news","#af001e","news"],
+["3plus","3+","3+","CH",0,"privat","#e30613","reality"],
+["4plus","4+","4+","CH",0,"privat","#00a0e3","series"],
+["5plus","5+","5+","CH",0,"privat","#7a1fa2","film"],
+["6plus","6+","6+","CH",0,"privat","#00a65a","series"],
+["tv24","TV24","TV24","CH",0,"privat","#ff6a00","doku"],
+["tv25","TV25","TV25","CH",0,"privat","#2b2b8c","series"],
+["s1ch","S1","S1","CH",0,"privat","#003366","doku"],
+["p7ch","ProSieben Schweiz","P7 CH","CH",0,"privat","#c8102e","pro7"],
+["s1chs","SAT.1 Schweiz","S1 CH","CH",0,"privat","#2a5bd7","privmain"],
+["telez","TeleZüri","TZ","CH",0,"regional","#0d5aa7","localch"],
+["teleb","TeleBärn","TB","CH",0,"regional","#c41b1b","localch"],
+["telebs","Telebasel","TBS","CH",0,"regional","#2c2c2c","localch"],
+// Pay-TV Sky DE/AT
+["skyone","Sky One","One","DE AT",1,"film","#4b2a91","series"],
+["skyatl","Sky Atlantic","Atl","DE AT",1,"film","#0d2b52","premium"],
+["skyshow","Sky Showcase","Show","DE AT",1,"film","#1f3f8f","series"],
+["skycrime","Sky Crime","Crime","DE AT",1,"film","#5c0f0f","crime"],
+["skycom","Sky Comedy","Comedy","DE AT",1,"film","#d48a00","sitcom"],
+["skyrep","Sky Replay","Replay","DE AT",1,"film","#5d4a8a","series"],
+["skydoc","Sky Documentaries","Docs","DE AT",1,"doku","#1d4e4e","doku"],
+["skynat","Sky Nature","Nature","DE AT",1,"doku","#2e6b2f","nature"],
+["scprem","Sky Cinema Premieren","Prem","DE AT",1,"film","#0c3a7a","cinema"],
+["schigh","Sky Cinema Highlights","High","DE AT",1,"film","#0c3a7a","cinema"],
+["scact","Sky Cinema Action","Action","DE AT",1,"film","#8a1010","cinemaaction"],
+["scfam","Sky Cinema Family","Family","DE AT",1,"film","#e06a00","cinemafam"],
+["sccla","Sky Cinema Classics","Class","DE AT",1,"film","#6b5320","cinemaclassic"],
+["ssbl","Sky Sport Bundesliga","BL","DE AT",1,"sport","#c50d1d","sportbl"],
+["sspl","Sky Sport Premier League","PL","DE AT",1,"sport","#3d0c56","sportpl"],
+["ssf1","Sky Sport F1","F1","DE AT",1,"sport","#e10600","sportf1"],
+["sstop","Sky Sport Top Event","Top","DE AT",1,"sport","#a50f1e","sport"],
+["sstennis","Sky Sport Tennis","Tennis","DE AT",1,"sport","#2f7d32","sporttennis"],
+["ssgolf","Sky Sport Golf","Golf","DE AT",1,"sport","#1b5e20","sportgolf"],
+["sky1austria","Sky Sport Austria 1","SSA1","AT",1,"sport","#c50d1d","sportbl"],
+["dazn1","DAZN 1","DAZN1","DE AT CH",1,"sport","#111","sport"],
+["dazn2","DAZN 2","DAZN2","DE AT CH",1,"sport","#111","sport"],
+["euro2","Eurosport 2","ES2","DE AT",1,"sport","#2b3a8c","sport"],
+// Pay-TV Schweiz
+["bluesport","blue Sport 1","blue","CH",1,"sport","#0b5cff","sportch"],
+["mysports","MySports One","MyS","CH",1,"sport","#e6007e","sportch"],
+["bluezoom","blue Zoom","Zoom","CH",1,"film","#0b5cff","cinema"],
+// Pay-TV Sender (Sky, Vodafone, MagentaTV, Zattoo etc.)
+["13th","13th Street","13th","DE AT CH",1,"film","#8b0000","crime"],
+["syfy","SYFY","SYFY","DE AT CH",1,"film","#5a2ca0","scifi"],
+["univ","Universal TV","Univ","DE AT CH",1,"film","#1a4f9c","series"],
+["wtvs","Warner TV Serie","WTV S","DE AT CH",1,"film","#1c4b8c","series"],
+["wtvf","Warner TV Film","WTV F","DE AT CH",1,"film","#1c4b8c","cinema"],
+["wtvc","Warner TV Comedy","WTV C","DE AT CH",1,"film","#1c4b8c","sitcom"],
+["axnb","AXN Black","AXN B","DE AT CH",1,"film","#222","crime"],
+["axnw","AXN White","AXN W","DE AT CH",1,"film","#7a7a7a","series"],
+["rtlcrime","RTL Crime","RTL C","DE AT CH",1,"film","#5a0b14","crime"],
+["rtlpass","RTL Passion","RTL P","DE AT CH",1,"film","#b03060","romance"],
+["rtlliv","RTL Living","RTL L","DE AT CH",1,"doku","#3f8f5a","living"],
+["s1emo","SAT.1 emotions","S1 emo","DE AT CH",1,"film","#c2185b","romance"],
+["p7fun","ProSieben FUN","P7 FUN","DE AT CH",1,"film","#c8102e","scifi"],
+["k1cla","kabel eins CLASSICS","k1 CL","DE AT CH",1,"film","#5a4a22","cinemaclassic"],
+["romance","Romance TV","Rom","DE AT CH",1,"film","#c2185b","romance"],
+["heimat","Heimatkanal","Heimat","DE AT CH",1,"film","#5a7f2a","heimat"],
+["kinowelt","Kinowelt TV","Kino","DE AT CH",1,"film","#4a3b2a","cinemaclassic"],
+["cni","Crime + Investigation","C+I","DE AT CH",1,"doku","#3b0b0b","truecrime"],
+["history","HISTORY Channel","HIST","DE AT CH",1,"doku","#a07a2a","history"],
+["natgeo","National Geographic","NatGeo","DE AT CH",1,"doku","#f2c200","doku"],
+["ngwild","Nat Geo Wild","NG Wild","DE AT CH",1,"doku","#e0a100","nature"],
+["disc","Discovery Channel","Disc","DE AT CH",1,"doku","#0a5aa8","dmax"],
+["animal","Animal Planet","Animal","DE AT CH",1,"doku","#2c8a3d","nature"],
+["spgesch","Spiegel Geschichte","SP G","DE AT CH",1,"doku","#c4161c","history"],
+["spwiss","Spiegel TV Wissen","SP W","DE AT CH",1,"doku","#c4161c","doku"],
+["cartoon","Cartoon Network","CN","DE AT CH",1,"kinder","#111","kids"],
+["djunior","Disney Junior","DisJr","DE AT CH",1,"kinder","#2c7be5","kids"],
+["nickjr","Nick Jr.","NickJr","DE AT CH",1,"kinder","#f57b0a","kids"],
+["junior","Junior","Junior","DE AT CH",1,"kinder","#5bb000","kids"],
+["classica","Classica","Clas","DE AT CH",1,"musik","#3e2a5a","classical"]
+];
+let CHANNELS=RAW.map(([id,name,short,country,pay,cat,color,p])=>({id,name,short,countries:country.split(" "),pay:!!pay,cat,color,p}));
+
+/* ---------- Zufall (deterministisch pro Sender und Tag) ---------- */
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+
+/* ---------- Inhalte ---------- */
+const P=["Lena Hofer","Jonas Wirth","Mira Kaya","Paul Brandner","Sophie Gerber","Elias Strasser","Hanna Vogt","Luca Meier","Clara Lindner","Felix Huber","Nora Keller","David Moser","Anna Berisha","Tobias Lang","Julia Frei","Max Aigner"];
+const O=["Hamburg","Graz","Luzern","Leipzig","Innsbruck","Basel","Köln","Salzburg","Bern","Rostock","Linz","St. Gallen","Freiburg","Dresden","Bregenz","am Bodensee","im Allgäu","im Engadin","an der Nordsee","im Salzkammergut"];
+const EP=["Der letzte Zeuge","Spurlos","Alte Rechnungen","Nachtschicht","Falsche Freunde","Zwischen den Zeilen","Die zweite Chance","Blinder Fleck","Unter Verdacht","Neuanfang","Familienbande","Grenzgänger","Das Versprechen","Kein Weg zurück","Stille Wasser","Auf Messers Schneide","Funkstille","Heimkehr","Die Wette","Schattenspiel"];
+const DESC={
+ Nachrichten:["Aktuelle Meldungen aus Politik, Wirtschaft und Gesellschaft, dazu Sport und Wetter.","Die wichtigsten Ereignisse des Tages im Überblick, mit Live-Schaltungen zu den Korrespondenten."],
+ Magazin:["Reportagen, Studiogäste und Service: Das Magazin greift auf, worüber {o} gerade spricht.","{p} präsentiert Hintergründe und Geschichten aus der Region und aller Welt."],
+ Krimi:["Eine Leiche {o2} gibt Rätsel auf. {p} stößt bei den Ermittlungen auf ein Netz aus Lügen.","Ein Einbruch endet tödlich. Die Spur führt {p} in die Vergangenheit eines angesehenen Unternehmers.","Ein vermisster Schüler, ein schweigendes Dorf: {p} muss gegen die Zeit ermitteln."],
+ Serie:["{p} steht vor einer schweren Entscheidung, während sich im Team die Spannungen zuspitzen.","Ein unerwarteter Besuch stellt das Leben von {p} auf den Kopf.","Neue Wendungen: Ein altes Geheimnis droht ans Licht zu kommen."],
+ Sitcom:["Chaos in der WG: Ein harmloser Plan gerät völlig außer Kontrolle.","Ein peinliches Missverständnis sorgt für Turbulenzen im Freundeskreis."],
+ Film:["{p} hat alles verloren und wagt {o2} einen Neuanfang, doch die Vergangenheit holt sie ein.","Eine zufällige Begegnung verändert zwei Leben. Großes Gefühlskino mit starken Bildern.","Spannung bis zur letzten Minute: Ein Auftrag, der nicht schiefgehen darf, gerät aus den Fugen.","Mit Witz und Wärme erzählt der Film von einer Familie, die sich neu finden muss."],
+ Doku:["Die Dokumentation zeigt mit eindrucksvollen Aufnahmen, wie sich {o} im Lauf der Jahrzehnte verändert hat.","Ein Blick hinter die Kulissen: Fachleute erklären Zusammenhänge, Zeitzeugen erinnern sich.","Faszinierende Bilder und neue Erkenntnisse aus Wissenschaft und Forschung."],
+ Natur:["Von der Paarungszeit bis zum ersten Winter: Kamerateams begleiten die Tiere ein ganzes Jahr.","Unberührte Landschaften und seltene Arten, gefilmt mit modernster Technik."],
+ Show:["Prominente Gäste, große Emotionen und jede Menge Unterhaltung, live aus dem Studio.","Kandidatinnen und Kandidaten zeigen ihr Können vor Publikum und Jury."],
+ Quiz:["Wer weiß am meisten? Spannende Fragen, hohe Gewinne und ein Moderator mit Herz.","Wissen, Taktik und Nervenstärke entscheiden über den Gewinn."],
+ Talk:["{p} diskutiert mit Gästen aus Politik und Gesellschaft über die Themen der Woche.","Kontroverse Positionen, klare Fragen: Der Talk zum aktuellen Geschehen."],
+ Reality:["Neue Herausforderungen, alte Konflikte: Die Teilnehmenden kommen an ihre Grenzen.","Hautnah dabei: Echte Menschen, echte Geschichten, ungeschönt erzählt."],
+ Kinder:["Spannende Abenteuer und lustige Geschichten für junge Zuschauerinnen und Zuschauer.","Die Freunde lösen gemeinsam ein kniffliges Rätsel."],
+ Sport:["Alle Bilder, Analysen und Stimmen. Expertinnen und Experten ordnen das Geschehen ein.","Spannung pur: Die Entscheidung fällt erst in den letzten Minuten."],
+ Musik:["Die besten Clips und Konzertmitschnitte, nonstop.","Klassik vom Feinsten: Ein Konzertabend mit internationalen Solistinnen und Solisten."],
+ Ratgeber:["Praktische Tipps für Haushalt, Gesundheit und Geld, verständlich erklärt.","Expertinnen und Experten beantworten die häufigsten Fragen der Zuschauer."],
+ Shopping:["Produkte live präsentiert, mit Angeboten und Vorführungen.","Mode, Beauty und Haushalt: Ausgewählte Angebote zum Bestellen."],
+ Religion:["Gottesdienste, Predigten und Gespräche über Glauben im Alltag."],
+ Wetter:["Das Wetter für die kommenden Tage, mit Aussichten für Berg und Tal."]
+};
+
+const FILMS=[ // t, Genre, Land, Jahr, Min, FSK, tag
+["Nachtzug nach Triest","Thriller","D/I",2023,104,12,"drama"],["Das letzte Licht von Lissabon","Drama","P/D",2021,112,12,"drama"],
+["Die Sommerfrische","Komödie","A",2022,94,0,"comedy"],["Gipfelsturm","Abenteuer","CH",2020,101,6,"family"],
+["Kalter Hafen","Krimi","D",2024,89,12,"crime"],["Operation Nordlicht","Actionfilm","USA",2022,118,16,"action"],
+["Zeitzone Null","Science-Fiction","USA/GB",2023,126,12,"scifi"],["Die Erbschaft von Hallstatt","Heimatfilm","A",2019,88,0,"heimat"],
+["Ein Herbst in Cornwall","Romanze","GB/D",2020,90,0,"romance"],["Blackout Protokoll","Thriller","D",2024,115,16,"action"],
+["Die Abenteuer von Pip & Puk","Animation","F",2022,86,0,"family"],["Rote Linie","Actionfilm","USA",2021,109,16,"action"],
+["Unter dem Eis","Mystery","N/D",2023,97,12,"scifi"],["Die Zirkusprinzessin","Musikfilm","D",1958,98,6,"classic"],
+["Der Mann aus Tanger","Thriller","F",1972,103,12,"classic"],["Wolken über Wyoming","Western","USA",1964,112,12,"classic"],
+["Familie auf Probe","Komödie","D",2023,95,0,"comedy"],["Das Geheimnis der Bergkapelle","Heimatfilm","D/A",2021,88,6,"heimat"],
+["Liebe auf Umwegen","Romanze","USA",2019,92,0,"romance"],["Sternenwanderer 2","Science-Fiction","USA",2024,138,12,"scifi"],
+["Der große Coup","Krimikomödie","GB",2022,101,12,"comedy"],["Rückkehr nach Mondsee","Drama","A",2024,96,6,"drama"],
+["Fluchtpunkt Marseille","Thriller","F",2023,108,16,"action"],["Die kleine Hexe Lotte","Familienfilm","D",2021,84,0,"family"],
+["Schneesturm","Katastrophenfilm","USA",2020,99,12,"action"],["Das Lied der Wellen","Drama","DK",2022,110,12,"drama"],
+["Ein Pferd namens Wunder","Familienfilm","USA",2023,95,0,"family"],["Der Schatz der Templer","Abenteuer","USA",2018,121,12,"action"],
+["Mord im Weinberg","Krimi","D",2024,89,12,"crime"],["Kaffee mit Herz","Romanze","D",2022,88,0,"romance"],
+["Signal aus dem All","Science-Fiction","USA",1978,115,12,"classic"],["Das Haus am Ende der Straße","Horror","USA",2021,96,16,"scifi"],
+["Die Hochzeitsplanerin","Komödie","USA",2023,104,0,"comedy"],["Zürcher Verhältnisse","Drama","CH",2023,99,12,"drama"],
+["Das Boot der Hoffnung","Historienfilm","D",2022,124,12,"drama"],["Mission Polarstern","Abenteuer","D",2024,93,6,"family"]
+];
+const SPORTS={
+ bl:{n:"Fußball: Bundesliga",dur:140,live:true,teams:["FC Bayern München","Borussia Dortmund","RB Leipzig","Bayer 04 Leverkusen","VfB Stuttgart","Eintracht Frankfurt","SC Freiburg","1. FC Union Berlin","Werder Bremen","VfL Wolfsburg","1. FSV Mainz 05","Borussia Mönchengladbach","TSG Hoffenheim","FC Augsburg","1. FC Köln","Hamburger SV"]},
+ pl:{n:"Fußball: Premier League",dur:130,live:true,teams:["Arsenal","Liverpool","Manchester City","Chelsea","Tottenham","Manchester United","Newcastle","Aston Villa","Brighton","West Ham"]},
+ cl:{n:"Fußball: UEFA Champions League",dur:150,live:true,teams:["Real Madrid","FC Barcelona","FC Bayern München","Inter Mailand","Paris Saint-Germain","Borussia Dortmund","Arsenal","Benfica","Atlético Madrid","RB Salzburg","Bayer 04 Leverkusen","Juventus"]},
+ abl:{n:"Fußball: Admiral Bundesliga",dur:130,live:true,teams:["Red Bull Salzburg","SK Sturm Graz","SK Rapid","FK Austria Wien","LASK","Wolfsberger AC","TSV Hartberg","SCR Altach"]},
+ sl:{n:"Fußball: Super League",dur:130,live:true,teams:["BSC Young Boys","FC Basel","FC Zürich","FC St. Gallen","Servette FC","FC Lugano","Grasshopper Club","FC Luzern"]},
+ nl:{n:"Eishockey: National League",dur:150,live:true,teams:["ZSC Lions","HC Davos","SC Bern","EV Zug","HC Lugano","Fribourg-Gottéron","Lausanne HC","SC Rapperswil-Jona"]},
+ del:{n:"Eishockey: PENNY DEL",dur:150,live:true,teams:["Eisbären Berlin","Adler Mannheim","EHC Red Bull München","Kölner Haie","ERC Ingolstadt","Grizzlys Wolfsburg","Fischtown Pinguins"]},
+ hb:{n:"Handball: Daikin HBL",dur:120,live:true,teams:["THW Kiel","SG Flensburg-Handewitt","Füchse Berlin","SC Magdeburg","Rhein-Neckar Löwen","MT Melsungen"]},
+ f1:{n:"Formel 1",dur:120,live:true,ev:["Großer Preis von Mexiko – Freies Training","Großer Preis von Mexiko – Qualifying","Großer Preis von Mexiko – Rennen","Großer Preis der USA – Highlights","Analyse: Das Titelrennen"]},
+ tennis:{n:"Tennis",dur:180,live:true,ev:["ATP 500 Wien – Viertelfinale","ATP 500 Basel – Achtelfinale","ATP Masters 1000 Paris – 1. Runde","WTA Finals – Gruppenphase"]},
+ golf:{n:"Golf",dur:240,live:true,ev:["DP World Tour – 2. Runde","PGA Tour – Finalrunde","LPGA Tour – Highlights"]},
+ ski:{n:"Ski Alpin: Weltcup",dur:120,live:true,ev:["Riesenslalom der Damen, Sölden – 1. Durchgang","Riesenslalom der Herren, Sölden – 2. Durchgang","Saisonvorschau Weltcup 2026/27"]},
+ darts:{n:"Darts",dur:180,live:true,ev:["European Tour – Viertelfinale","Grand Slam of Darts – Gruppenphase","World Series of Darts – Finale"]},
+ cyc:{n:"Radsport",dur:120,live:false,ev:["Bahnrad: UCI Track Champions League","Rückblick: Die Klassiker der Saison"]},
+ snooker:{n:"Snooker",dur:180,live:true,ev:["English Open – 2. Runde","Northern Ireland Open – Viertelfinale"]},
+ box:{n:"Boxen",dur:180,live:true,ev:["Schwergewicht – WM-Kampf","Fight Night – Hauptkampf"]}
+};
+
+/* Programm-Pools: [Titel, Genre, Dauer, Art, Untertitel?]  Art: s=Serie, f=Film, sp:<key>=Sport, n=normal */
+const POOLS={
+ pubmain:{
+  morning:[["Morgenmagazin","Magazin",90],["Gefragt – Gejagt","Quiz",60],["Rote Rosen","Serie",50,"s"],["Sturm der Liebe","Serie",50,"s"],["Panorama-Reisen","Doku",45],["Wetter","Wetter",5]],
+  day:[["Mittagsmagazin","Magazin",60],["Verrückt nach Meer","Doku",45],["In aller Freundschaft","Serie",45,"s"],["Die Küchenschlacht","Show",45],["Bares für Rares","Show",60],["Wer weiß denn sowas?","Quiz",50],["SOKO Wien","Krimi",45,"s"],["Die Rosenheim-Cops","Krimi",45,"s"]],
+  eve:[["Hallo Deutschland","Magazin",30],["Brisant","Magazin",40],["Wer weiß denn sowas?","Quiz",50],["Gefragt – Gejagt","Quiz",50],["Die Rosenheim-Cops","Krimi",50,"s"],["Leute heute","Magazin",15]],
+  prime:[["Tatort","Krimi",90,"s"],["Der Bergdoktor","Serie",90,"s"],["Ein starkes Team","Krimi",90,"s"],["Der Usedom-Krimi","Krimi",90,"s"],["Die Spezialisten","Krimi",60,"s"],["Klein gegen Groß","Show",165],["Wilsberg","Krimi",90,"s"],["Spielfilm der Woche","Film",95,"f"],["Die Landarztpraxis","Serie",50,"s"],["Report","Magazin",45]],
+  late:[["Maischberger","Talk",75],["Markus Lanz","Talk",75],["Hart aber fair","Talk",75],["Kulturzeit extra","Magazin",45],["Spielfilm","Film",95,"f"],["Polizeiruf 110","Krimi",90,"s"]],
+  night:[["Nachtmagazin","Nachrichten",20],["Spielfilm","Film",95,"f"],["Tatort","Krimi",90,"s"],["Verrückt nach Meer","Doku",45],["Wetter","Wetter",5]]},
+ privmain:{
+  morning:[["Guten Morgen Deutschland","Magazin",120],["Frühstücksfernsehen","Magazin",150],["Unter uns","Serie",30,"s"],["Barbara Salesch – Das Strafgericht","Reality",60]],
+  day:[["Punkt 12","Magazin",120],["Ulrich Wetzel – Das Strafgericht","Reality",60],["Auf Streife","Reality",60],["Die Ruhrpottwache","Reality",60],["Lenßen übernimmt","Reality",60],["Das Familiengericht","Reality",60]],
+  eve:[["Explosiv – Das Magazin","Magazin",30],["Gute Zeiten, schlechte Zeiten","Serie",30,"s"],["Alles was zählt","Serie",30,"s"],["Lebensmittel-Detektive","Reality",60],["Klinik am Südring","Reality",60]],
+  prime:[["Wer wird Millionär?","Quiz",120],["Let's Dance","Show",180],["Das Supertalent","Show",165],["The Voice of Germany","Show",150],["Die Bachelorette","Reality",120],["Ninja Warrior Germany","Show",165],["Der Bergretter","Serie",60,"s"],["Spielfilm","Film",115,"f"]],
+  late:[["RTL Nachtjournal","Nachrichten",30],["stern TV","Magazin",120],["Spiegel TV","Magazin",60],["Spielfilm","Film",100,"f"]],
+  night:[["Spielfilm","Film",100,"f"],["Medical Detectives","Doku",50,"s"],["CSI: Vegas","Krimi",45,"s"],["Teleshopping","Shopping",30]]},
+ pro7:{
+  morning:[["Two and a Half Men","Sitcom",20,"s"],["The Big Bang Theory","Sitcom",20,"s"],["Young Sheldon","Sitcom",20,"s"],["Mom","Sitcom",20,"s"]],
+  day:[["The Big Bang Theory","Sitcom",20,"s"],["Die Simpsons","Sitcom",25,"s"],["Galileo","Doku",60],["Grey's Anatomy","Serie",50,"s"],["Young Sheldon","Sitcom",20,"s"]],
+  eve:[["Die Simpsons","Sitcom",25,"s"],["newstime","Nachrichten",10],["Galileo","Doku",60],["The Big Bang Theory","Sitcom",20,"s"]],
+  prime:[["Joko & Klaas gegen ProSieben","Show",195],["Germany's Next Topmodel","Show",150],["TV total","Show",90],["Blockbuster","Film",130,"f"],["Schlag den Star","Show",240],["The Masked Singer","Show",180]],
+  late:[["Blockbuster","Film",120,"f"],["TV total","Show",75],["Family Guy","Sitcom",25,"s"]],
+  night:[["Blockbuster","Film",110,"f"],["Two and a Half Men","Sitcom",20,"s"],["The Big Bang Theory","Sitcom",20,"s"]]},
+ vox:{
+  morning:[["Verklag mich doch!","Reality",60],["Mein Kind, dein Kind","Reality",60]],
+  day:[["Shopping Queen","Reality",60],["Zwischen Tüll und Tränen","Reality",60],["Mieten, kaufen, wohnen","Reality",60],["Der Hundeprofi","Reality",60]],
+  eve:[["First Dates – Ein Tisch für zwei","Reality",60],["Das perfekte Dinner","Show",60]],
+  prime:[["Die Höhle der Löwen","Show",150],["Sing meinen Song","Show",135],["Club der roten Bänder","Serie",60,"s"],["Grill den Henssler","Show",210],["Hot oder Schrott","Reality",120],["Spielfilm","Film",110,"f"]],
+  late:[["Medical Detectives","Doku",50,"s"],["Prominent!","Magazin",30],["Spielfilm","Film",100,"f"]],
+  night:[["Medical Detectives","Doku",50,"s"],["Autopsie – Mysteriöse Todesfälle","Doku",50,"s"]]},
+ k1:{
+  morning:[["Navy CIS","Krimi",50,"s"],["Castle","Krimi",50,"s"],["Blue Bloods","Krimi",50,"s"]],
+  day:[["Mein Lokal, Dein Lokal","Reality",60],["Abenteuer Leben","Doku",60],["Navy CIS: L.A.","Krimi",50,"s"],["Rosins Restaurants","Reality",90]],
+  eve:[["Abenteuer Leben täglich","Doku",60],["Mein Lokal, Dein Lokal","Reality",60]],
+  prime:[["Spielfilm","Film",120,"f"],["Achtung Kontrolle!","Reality",120],["Navy CIS","Krimi",60,"s"],["Rosins Restaurants","Reality",120]],
+  late:[["Spielfilm","Film",110,"f"],["Chicago Fire","Serie",50,"s"]],night:[["Spielfilm","Film",100,"f"],["Castle","Krimi",50,"s"]]},
+ reality:{
+  morning:[["Zuhause im Glück","Reality",60],["Frauentausch","Reality",120],["Hartz und herzlich","Reality",60]],
+  day:[["Die Wollnys","Reality",60],["Hilf mir! Jung, pleite, verzweifelt","Reality",60],["Köln 50667","Serie",30,"s"],["Berlin – Tag & Nacht","Serie",30,"s"],["Say Yes to the Dress","Reality",30],["Bauer sucht Frau","Reality",60]],
+  eve:[["Berlin – Tag & Nacht","Serie",30,"s"],["Köln 50667","Serie",30,"s"],["Pures Leben","Reality",60]],
+  prime:[["Hartz und herzlich","Reality",120],["Kampf der Realitystars","Reality",150],["Temptation Island","Reality",120],["Die Bauretter","Reality",120],["Spielfilm","Film",120,"f"]],
+  late:[["Spielfilm","Film",110,"f"],["Die Geissens","Reality",60]],night:[["Spielfilm","Film",100,"f"],["Hartz und herzlich","Reality",60]]},
+ orf1:{
+  morning:[["Okidoki","Kinder",120],["Die Simpsons","Sitcom",25,"s"],["How I Met Your Mother","Sitcom",20,"s"]],
+  day:[["Grey's Anatomy","Serie",45,"s"],["Die Simpsons","Sitcom",25,"s"],["The Rookie","Krimi",45,"s"],["Young Sheldon","Sitcom",20,"s"]],
+  eve:[["ZIB Magazin","Nachrichten",15],["Die Simpsons","Sitcom",25,"s"],["Young Sheldon","Sitcom",20,"s"]],
+  prime:[["Starmania","Show",150],["SOKO Donau","Krimi",45,"s"],["Vorstadtweiber","Serie",50,"s"],["Spielfilm","Film",110,"f"],["Fußball: UEFA Champions League","Sport",150,"sp:cl"],["Dok 1","Doku",50]],
+  late:[["ZIB Nacht","Nachrichten",20],["Spielfilm","Film",100,"f"],["Willkommen Österreich","Show",55]],night:[["Spielfilm","Film",100,"f"],["The Rookie","Krimi",45,"s"]]},
+ servus:{
+  morning:[["Servus am Morgen","Magazin",120],["Heimatleuchten","Doku",50]],
+  day:[["Bergwelten","Doku",50],["Servus Krimi","Krimi",90,"s"],["Heimatleuchten","Doku",50],["Der Bulle von Tölz","Krimi",90,"s"]],
+  eve:[["Servus Nachrichten","Nachrichten",20],["Quizmaster","Quiz",50]],
+  prime:[["Bergwelten","Doku",50],["Spielfilm","Film",105,"f"],["Fußball: Admiral Bundesliga","Sport",150,"sp:abl"],["Talk im Hangar-7","Talk",75],["Ski Alpin: Weltcup","Sport",120,"sp:ski"]],
+  late:[["Talk im Hangar-7","Talk",75],["Spielfilm","Film",100,"f"]],night:[["Bergwelten","Doku",50],["Spielfilm","Film",100,"f"]]},
+ srf2:{
+  morning:[["Kinderprogramm","Kinder",180]],day:[["Grey's Anatomy","Serie",45,"s"],["How I Met Your Mother","Sitcom",20,"s"],["sportpanorama","Sport",60],["Ski Alpin: Weltcup","Sport",120,"sp:ski"]],
+  eve:[["Young Sheldon","Sitcom",20,"s"],["Die Simpsons","Sitcom",25,"s"]],
+  prime:[["Eishockey: National League","Sport",150,"sp:nl"],["Fußball: UEFA Champions League","Sport",150,"sp:cl"],["Spielfilm","Film",110,"f"],["sportlounge","Talk",45]],
+  late:[["Spielfilm","Film",100,"f"],["sportaktuell","Sport",20]],night:[["Spielfilm","Film",100,"f"]]},
+ series:{all:[["Navy CIS","Krimi",45,"s"],["Grey's Anatomy","Serie",45,"s"],["Castle","Krimi",45,"s"],["Monk","Krimi",45,"s"],["Bones – Die Knochenjägerin","Krimi",45,"s"],["Chicago Med","Serie",45,"s"],["Criminal Minds","Krimi",45,"s"],["The Good Doctor","Serie",45,"s"],["Rizzoli & Isles","Krimi",45,"s"],["Lucifer","Serie",50,"s"],["Downton Abbey","Serie",55,"s"],["Der Doktor und das liebe Vieh","Serie",50,"s"],["Inga Lindström","Film",90],["Spielfilm","Film",100,"f"]]},
+ premium:{all:[["House of the Dragon","Serie",60,"s"],["The Last of Us","Serie",60,"s"],["Succession","Serie",60,"s"],["The White Lotus","Serie",60,"s"],["Babylon Berlin","Serie",50,"s"],["Das Boot","Serie",55,"s"],["Chernobyl","Serie",60,"s"],["Der Pass","Krimi",55,"s"],["Gomorrha","Krimi",50,"s"]]},
+ crime:{all:[["Law & Order: Special Victims Unit","Krimi",45,"s"],["Criminal Minds","Krimi",45,"s"],["Cold Case","Krimi",45,"s"],["Medical Detectives","Doku",45,"s"],["CSI: Den Tätern auf der Spur","Krimi",45,"s"],["Wolfe – Verbrechen im Visier","Krimi",50,"s"],["Vera – Ein ganz spezieller Fall","Krimi",90,"s"],["Inspector Barnaby","Krimi",95,"s"],["Kommissar Rex","Krimi",45,"s"]]},
+ sitcom:{all:[["Friends","Sitcom",25,"s"],["How I Met Your Mother","Sitcom",25,"s"],["The Office","Sitcom",25,"s"],["Brooklyn Nine-Nine","Sitcom",25,"s"],["Modern Family","Sitcom",25,"s"],["South Park","Sitcom",25,"s"],["Scrubs","Sitcom",25,"s"],["Two and a Half Men","Sitcom",25,"s"],["The King of Queens","Sitcom",25,"s"]]},
+ scifi:{all:[["Star Trek: Discovery","Serie",50,"s"],["Doctor Who","Serie",50,"s"],["Stargate SG-1","Serie",45,"s"],["Supernatural","Serie",45,"s"],["The Expanse","Serie",50,"s"],["Spielfilm","Film",115,"f:scifi"]]},
+ romance:{all:[["Rosamunde Pilcher","Film",90],["Inga Lindström","Film",90],["Ein Sommer in …","Film",90],["Liebe am Fjord","Film",90],["Spielfilm","Film",95,"f:romance"],["Bridgerton","Serie",60,"s"],["Gilmore Girls","Serie",45,"s"]]},
+ heimat:{all:[["Der Bergdoktor","Serie",50,"s"],["Die Bergretter","Serie",50,"s"],["Forsthaus Falkenau","Serie",50,"s"],["Der Landarzt","Serie",50,"s"],["Heimatfilm","Film",90,"f:heimat"],["Musikantenstadl Classics","Musik",90]]},
+ cinema:{all:[["Spielfilm","Film",110,"f"]]},
+ cinemaaction:{all:[["Spielfilm","Film",110,"f:action"]]},
+ cinemafam:{all:[["Spielfilm","Film",95,"f:family"],["Spielfilm","Film",95,"f:comedy"]]},
+ cinemaclassic:{all:[["Spielfilm","Film",105,"f:classic"],["Spielfilm","Film",100,"f:drama"]]},
+ film:{all:[["Spielfilm","Film",105,"f"],["Spielfilm","Film",100,"f"],["Star Trek: Raumschiff Voyager","Serie",45,"s"],["Baywatch","Serie",45,"s"]]},
+ doku:{all:[["Terra X","Doku",45],["Geheimnisse des Universums","Doku",50,"s"],["Mythos Römer","Doku",45],["Mega-Bauwerke","Doku",50,"s"],["Die großen Kriminalfälle","Doku",45],["Planet Wissen","Doku",60],["Die Geschichte der Alpen","Doku",45],["Machtkampf im Kreml","Doku",50],["Engineering – Was die Welt bewegt","Doku",50,"s"],["Kriminalreport","Doku",45]]},
+ docnews:{all:[["phoenix vor Ort","Nachrichten",60],["phoenix der Tag","Nachrichten",60],["Dokumentation","Doku",45],["Bundestag live","Nachrichten",180],["phoenix runde","Talk",45],["Terra X","Doku",45]]},
+ nature:{all:[["Wildes Afrika","Natur",50,"s"],["Planet Erde III","Natur",55,"s"],["Raubtiere der Arktis","Natur",50],["Ozeane – Tiefsee","Natur",50],["Der Tierarzt vom Yukon","Reality",45,"s"],["Wildes Österreich","Natur",50]]},
+ history:{all:[["Der Zweite Weltkrieg in Farbe","Doku",50,"s"],["Pyramiden: Neue Erkenntnisse","Doku",50],["Die Habsburger","Doku",50,"s"],["Ancient Aliens","Doku",45,"s"],["Pawn Stars","Reality",25,"s"],["Die Wikinger","Doku",50,"s"]]},
+ truecrime:{all:[["Medical Detectives","Doku",45,"s"],["Snapped – Wenn Frauen töten","Doku",45,"s"],["Mord im Paradies","Doku",45,"s"],["Cold Case Files","Doku",45,"s"],["The First 48","Doku",45,"s"]]},
+ dmax:{all:[["Die Schatzsucher – Goldrausch in Alaska","Reality",50,"s"],["Steel Buddies","Reality",50,"s"],["Ice Road Truckers","Reality",50,"s"],["Fang des Lebens","Reality",50,"s"],["Moonshiners","Reality",50,"s"],["Auction Hunters","Reality",25,"s"],["Die Gebrauchtwagen-Profis","Reality",50,"s"]]},
+ living:{all:[["Die Wohnungsretter","Ratgeber",45],["Kochen mit Leidenschaft","Ratgeber",30],["Traumhaus am Meer","Reality",45,"s"],["Garten-Profis","Ratgeber",30]]},
+ culture:{all:[["Kulturzeit","Magazin",40],["Konzert","Musik",90],["Dokumentation","Doku",50],["Spielfilm","Film",100,"f:drama"],["Kunst & Krempel","Magazin",30],["Theater","Show",120],["Universum History","Doku",50],["Re: Reportage","Doku",35]]},
+ regional:{morning:[["Wetter","Wetter",5],["Panoramabilder","Doku",60],["Rote Rosen","Serie",50,"s"]],day:[["Planet Wissen","Doku",60],["Kaffee oder Tee","Magazin",90],["Wunderschön!","Doku",90],["Landesschau","Magazin",45]],eve:[["Landesschau","Magazin",45],["Abendschau","Magazin",30],["Lokalzeit","Magazin",30],["Regionalnachrichten","Nachrichten",15]],prime:[["Visite","Ratgeber",60],["Unser Land","Doku",45],["Die Rezeptsucherin","Ratgeber",45],["Krimi","Krimi",90,"s"],["Quizduell","Quiz",45],["Die Sendung mit dem Elefanten","Kinder",30]],late:[["Spielfilm","Film",95,"f"],["Talk in der Region","Talk",60]],night:[["Spielfilm","Film",95,"f"],["Panoramabilder","Doku",60]]},
+ localch:{all:[["News","Nachrichten",30],["Talk täglich","Talk",30],["Sonntalk","Talk",30],["Wetter","Wetter",10],["Stadtgeschichten","Magazin",30],["Lifestyle","Magazin",30]]},
+ news:{block:true,all:[["Nachrichten","Nachrichten",30],["Wirtschaft","Nachrichten",15],["Börse am Morgen","Nachrichten",15],["Wetter","Wetter",5],["Reportage","Doku",45],["Dokumentation","Doku",50],["Interview","Talk",15],["Sport kompakt","Sport",15]]},
+ sportnews:{block:true,all:[["Sky Sport News","Sport",60],["Transfer Update","Sport",30],["Bundesliga Countdown","Sport",30],["Sport News kompakt","Sport",15]]},
+ sport:{all:[["Fußball: UEFA Champions League","Sport",150,"sp:cl"],["Darts","Sport",180,"sp:darts"],["Tennis","Sport",180,"sp:tennis"],["Snooker","Sport",180,"sp:snooker"],["Radsport","Sport",120,"sp:cyc"],["Eishockey: PENNY DEL","Sport",150,"sp:del"],["Handball: Daikin HBL","Sport",120,"sp:hb"],["Ski Alpin: Weltcup","Sport",120,"sp:ski"],["Boxen","Sport",180,"sp:box"],["Sport-Magazin","Sport",60]]},
+ sportch:{all:[["Eishockey: National League","Sport",150,"sp:nl"],["Fußball: Super League","Sport",130,"sp:sl"],["Fußball: Premier League","Sport",130,"sp:pl"],["Tennis","Sport",180,"sp:tennis"],["Highlights","Sport",60]]},
+ sportbl:{all:[["Fußball: Bundesliga","Sport",140,"sp:bl"],["Fußball: Admiral Bundesliga","Sport",130,"sp:abl"],["Sky90 – die Fußballdebatte","Talk",90],["Bundesliga Highlights","Sport",60]]},
+ sportpl:{all:[["Fußball: Premier League","Sport",130,"sp:pl"],["Premier League Highlights","Sport",60]]},
+ sportf1:{all:[["Formel 1","Sport",120,"sp:f1"],["F1 Classics","Sport",120],["Formel 2","Sport",60]]},
+ sporttennis:{all:[["Tennis","Sport",180,"sp:tennis"]]},
+ sportgolf:{all:[["Golf","Sport",240,"sp:golf"]]},
+ kids:{all:[["Peppa Wutz","Kinder",10,"s"],["PAW Patrol","Kinder",25,"s"],["Die Sendung mit der Maus","Kinder",30],["Bluey","Kinder",10,"s"],["Löwenzahn","Kinder",25,"s"],["Die Schlümpfe","Kinder",25,"s"],["SpongeBob Schwammkopf","Kinder",25,"s"],["Wissen macht Ah!","Kinder",25],["logo!","Nachrichten",10],["Pokémon","Kinder",25,"s"],["Miraculous","Kinder",25,"s"],["Familienfilm","Film",90,"f:family"]]},
+ music:{all:[["Deluxe Music Nonstop","Musik",120],["Deluxe Lounge","Musik",60],["Konzert","Musik",90],["Charts","Musik",60]]},
+ classical:{all:[["Konzert","Musik",120],["Oper","Musik",180],["Ballett","Musik",120],["Meisterklasse","Musik",60]]},
+ church:{all:[["Gottesdienst","Religion",60],["Bibel TV Talk","Talk",30],["Lobpreis","Musik",60],["Spielfilm","Film",95,"f:family"]]},
+ shop:{block:true,all:[["Mode & Accessoires","Shopping",60],["Beauty Special","Shopping",60],["Küche & Haushalt","Shopping",60],["Schmuck","Shopping",60],["Technik live","Shopping",60]]}
+};
+const SHORT=[["Wetter","Wetter"],["Nachrichten","Nachrichten"],["Programmhinweise","Magazin"],["Kurznachrichten","Nachrichten"]];
+
+/* Feste Sendeplätze (Minuten ab 05:00) */
+const m=(hm)=>{const[h,mi]=hm.split(":").map(Number);let v=h*60+mi-300;if(v<0)v+=1440;return v};
+const ANCH={
+ ard:[["20:00","Tagesschau","Nachrichten",15],["22:15","Tagesthemen","Nachrichten",30],["17:00","Tagesschau","Nachrichten",15],["20:15","Tatort","Krimi",90,[0],"s"]],
+ zdf:[["19:00","heute","Nachrichten",20],["21:45","heute journal","Nachrichten",30],["20:15","Rosamunde Pilcher","Film",90,[0]],["20:15","Der Alte","Krimi",60,[5],"s"]],
+ orf2:[["19:30","ZIB 1","Nachrichten",20],["19:00","Bundesland heute","Magazin",30],["22:00","ZIB 2","Nachrichten",30],["13:00","ZIB 13","Nachrichten",15]],
+ srf1:[["19:30","Tagesschau","Nachrichten",25],["21:50","10vor10","Nachrichten",25],["19:00","Schweiz aktuell","Magazin",25],["12:45","Tagesschau","Nachrichten",15],["20:05","Puls","Ratgeber",40,[1]],["20:05","Kassensturz","Ratgeber",40,[2]]],
+ rtl:[["18:45","RTL Aktuell","Nachrichten",20],["19:05","Alles was zählt","Serie",35,null,"s"],["19:40","Gute Zeiten, schlechte Zeiten","Serie",35,null,"s"]],
+ sat1:[["19:55","SAT.1 Nachrichten","Nachrichten",5]],
+ pro7:[["19:05","Galileo","Doku",65]],
+ vox:[["20:00","Prominent!","Magazin",15]],
+ orf1:[["19:30","ZIB Magazin","Nachrichten",15]],
+ puls4:[["19:45","PULS 4 News","Nachrichten",15]],
+ servus:[["19:20","Servus Nachrichten","Nachrichten",20]],
+ kika:[["19:50","Unser Sandmännchen","Kinder",10],["19:30","logo!","Nachrichten",10]],
+ "3sat":[["19:20","Kulturzeit","Magazin",40],["19:00","heute","Nachrichten",20]],
+ arte:[["19:20","ARTE Journal","Nachrichten",20]],
+ br:[["19:30","Rundschau","Nachrichten",15]],wdr:[["19:30","Lokalzeit","Magazin",30]],ndr:[["19:30","Regionalmagazin","Magazin",30],["20:00","Tagesschau","Nachrichten",15]],
+ mdr:[["19:30","MDR aktuell","Nachrichten",20]],rbb:[["19:30","Abendschau","Magazin",30]],swr:[["19:30","SWR Aktuell","Nachrichten",15]],hr:[["19:30","hessenschau","Magazin",30]]
+};
+
+/* ---------- Zeit-Helfer ---------- */
+const DAYMS=864e5;
+const pad=n=>String(n).padStart(2,"0");
+const hm=d=>pad(d.getHours())+":"+pad(d.getMinutes());
+const WD=["So","Mo","Di","Mi","Do","Fr","Sa"],WDL=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"];
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+function dayStart(key){const[y,mo,da]=key.split("-").map(Number);return new Date(y,mo-1,da,5,0,0,0)}
+function broadcastKey(d){const x=new Date(d);if(x.getHours()<5)x.setDate(x.getDate()-1);return keyOf(x)}
+function addMin(d,min){const x=new Date(d);x.setMinutes(x.getMinutes()+min);return x}
+function addDays(key,n){const d=dayStart(key);d.setDate(d.getDate()+n);return keyOf(d)}
+const fmtDay=d=>WD[d.getDay()]+" "+pad(d.getDate())+"."+pad(d.getMonth()+1)+".";
+
+/* ---------- Programm erzeugen ---------- */
+const imported=new Map(); // chId -> [programmes]
+const cache=new Map();
+function bandOf(t){const h=(t+300)/60%24;if(h>=5&&h<12)return"morning";if(h>=12&&h<18)return"day";if(h<20.25&&h>=18)return"eve";if(h>=20.25&&h<22.5)return"prime";if(h>=22.5||h<1)return"late";return"night"}
+function fill(tpl,r){return tpl.replace("{p}",pick(r,P)).replace("{o2}",pick(r,["in "+pick(r,O.filter(x=>!x.startsWith("im ")&&!x.startsWith("am ")&&!x.startsWith("an "))),pick(r,O.filter(x=>/^(im|am|an) /.test(x)))])).replace("{o}",pick(r,O.filter(x=>!/^(im|am|an) /.test(x))))}
+
+function makeProg(ch,item,start,dur,r,band,key){
+  const[title,genre,,kind,sub0]=item;let t=title,sub=sub0||"",g=genre,desc,fsk=0,flags=[],year,country,live=false;
+  if(kind&&kind[0]==="f"){
+    const tag=kind.split(":")[1];const pool=tag?FILMS.filter(f=>f[6]===tag):FILMS;const f=pick(r,pool.length?pool:FILMS);
+    t=f[0];g=f[1];country=f[2];year=f[3];fsk=f[5];sub=f[1]+", "+f[2]+" "+f[3];desc=fill(pick(r,DESC.Film),r);
+    if(ch.p.startsWith("cinema")&&ch.id==="scprem")flags.push("Premiere");
+  }else if(kind&&kind.startsWith("sp:")){
+    const S=SPORTS[kind.slice(3)];t=S.n;
+    if(S.teams){let a=pick(r,S.teams),b=pick(r,S.teams);while(b===a)b=pick(r,S.teams);sub=a+" – "+b}else sub=pick(r,S.ev);
+    live=S.live&&(band==="prime"||band==="eve"||band==="day")&&r()<.75;desc=(sub.includes(" – ")&&S.teams?"Spitzenspiel: "+sub+". ":"")+pick(r,DESC.Sport);
+  }else if(kind==="s"){
+    const s=1+Math.floor(r()*12),e=1+Math.floor(r()*22);sub="Staffel "+s+", Folge "+e+": "+pick(r,EP);
+    desc=fill(pick(r,DESC[g]||DESC.Serie),r);fsk=g==="Krimi"?12:(r()<.3?6:0);
+  }else{
+    desc=fill(pick(r,DESC[g]||DESC.Magazin),r);
+  }
+  if(g==="Krimi"&&!fsk)fsk=12;
+  if(live)flags.push("Live");
+  if(!live&&(band==="night"||band==="morning")&&g!=="Nachrichten"&&g!=="Kinder"&&r()<.55)flags.push("Wdh.");
+  if(!ch.pay&&(ch.cat==="oer"||ch.cat==="regional")&&r()<.6)flags.push("UT");
+  if((g==="Film"||g==="Krimi")&&r()<.3)flags.push("AD");
+  if(band==="prime"&&!flags.includes("Wdh.")&&r()<.25&&g!=="Nachrichten")flags.push("Neu");
+  return{id:ch.id+"|"+key+"|"+start.getTime(),ch:ch.id,start,end:addMin(start,dur),title:t,sub,genre:g,desc,fsk,flags,year,country,src:"demo"};
+}
+
+function generate(ch,key){
+  const r=rng(hash(ch.id+"@"+key));const d0=dayStart(key);const dow=d0.getDay();
+  const prof=POOLS[ch.p]||POOLS.series;const out=[];
+  const poolFor=b=>prof.all||prof[b]||prof.day;
+  let anchors=(ANCH[ch.id]||[]).filter(a=>!a[4]||a[4].includes(dow)).map(a=>({s:m(a[0]),item:[a[1],a[2],a[3],a[5]]}));
+  // Sport-Tage: Bundesliga am Wochenende, Champions League Di/Mi
+  if(ch.p==="sportbl"&&(dow===6))anchors.push({s:m("15:30"),item:["Fußball: Bundesliga","Sport",150,"sp:bl"]},{s:m("18:30"),item:["Fußball: Bundesliga","Sport",140,"sp:bl"]});
+  if((ch.id==="dazn1"||ch.id==="sstop")&&(dow===2||dow===3))anchors.push({s:m("21:00"),item:["Fußball: UEFA Champions League","Sport",120,"sp:cl"]});
+  if(ch.id==="orf1"&&(dow===2||dow===3))anchors.push({s:m("20:15"),item:["Fußball: UEFA Champions League","Sport",150,"sp:cl"]});
+  anchors.sort((a,b)=>a.s-b.s);
+  const hasPrimeAnchor=anchors.some(a=>a.s===m("20:15"));
+  const primeSoft=!prof.block&&!prof.all?m("20:15"):(["cinema","film","series","romance","heimat","crime","premium","culture","doku"].includes(ch.p)?m("20:15"):null);
+  let t=0,last="";
+  while(t<1440){
+    const nextA=anchors.find(a=>a.s>=t);
+    if(nextA&&nextA.s===t){const it=nextA.item;out.push(makeProg(ch,it,addMin(d0,t),it[2],r,bandOf(t),key));t+=it[2];last=it[0];anchors=anchors.filter(a=>a!==nextA&&a.s>=t);continue}
+    let limit=nextA?nextA.s:1440;
+    if(primeSoft!=null&&!hasPrimeAnchor&&t<primeSoft&&limit>primeSoft)limit=primeSoft;
+    const band=bandOf(t);const pool=poolFor(band);
+    let it=pick(r,pool),tries=0;while(it[0]===last&&pool.length>1&&tries++<4)it=pick(r,pool);
+    let dur=it[2];
+    const gap=limit-t;
+    if(dur>gap){
+      if(gap<5&&out.length){const p=out[out.length-1];p.end=addMin(p.end,gap);t=limit;continue}
+      if(gap<=30){const s=pick(r,SHORT);it=[s[0],s[1],gap];dur=gap}else{dur=gap}
+    }
+    const prog=makeProg(ch,it,addMin(d0,t),dur,r,band,key);
+    if(it[3]&&it[3][0]==="f"){ // Filmlänge an Film anpassen
+      const f=FILMS.find(x=>x[0]===prog.title);if(f){let fd=Math.ceil((f[4]+10)/5)*5;fd=Math.min(fd,gap);if(fd>=60){dur=fd;prog.end=addMin(prog.start,dur)}}
+    }
+    out.push(prog);t+=dur;last=it[0];
+  }
+  return out;
+}
+function schedule(ch,key){
+  const k=ch.id+key;if(cache.has(k))return cache.get(k);
+  let list;
+  if(imported.has(ch.id)){const s=dayStart(key),e=addMin(s,1440);list=imported.get(ch.id).filter(p=>p.end>s&&p.start<e)}
+  else if(ch.importedOnly)list=[];
+  else list=generate(ch,key);
+  cache.set(k,list);return list;
+}
+function progAt(ch,date){const key=broadcastKey(date);const l=schedule(ch,key);const i=l.findIndex(p=>p.start<=date&&p.end>date);return i<0?{cur:null,next:l.find(p=>p.start>date)||null}:{cur:l[i],next:l[i+1]||schedule(ch,addDays(key,1))[0]}}
+function findProg(id){const[chId,key]=id.split("|");const ch=CHANNELS.find(c=>c.id===chId);if(!ch)return null;return schedule(ch,key).find(p=>p.id===id)||null}
+
+/* ---------- Zustand ---------- */
+const today=()=>broadcastKey(new Date());
+const S={view:store.get("view","jetzt"),day:today(),country:store.get("country","all"),recv:store.get("recv","all"),cats:new Set(store.get("cats",[])),favOnly:store.get("favOnly",false),
+  favs:new Set(store.get("favs",["ard","zdf","orf2","srf1","rtl","pro7","servus","skyatl","ssbl"])),merk:store.get("merk",[]),q:""};
+const save=()=>{store.set("view",S.view);store.set("country",S.country);store.set("recv",S.recv);store.set("cats",[...S.cats]);store.set("favOnly",S.favOnly);store.set("favs",[...S.favs]);store.set("merk",S.merk)};
+
+function visibleChannels(){
+  return CHANNELS.filter(c=>(S.country==="all"||c.countries.includes(S.country))&&(S.recv==="all"||(S.recv==="pay")===c.pay)&&(!S.cats.size||S.cats.has(c.cat))&&(!S.favOnly||S.favs.has(c.id)))
+    .sort((a,b)=>(S.favs.has(b.id)-S.favs.has(a.id)));
+}
+
+/* ---------- Rendering-Helfer ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const logo=c=>`<span class="logo" style="background:${c.color}" aria-hidden="true">${esc(c.short)}</span>`;
+const STAR='<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
+const STARO='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8z"/></svg>';
+const starBtn=c=>`<button class="star" data-fav="${c.id}" aria-pressed="${S.favs.has(c.id)}" aria-label="${esc(c.name)} als Favorit">${S.favs.has(c.id)?STAR:STARO}</button>`;
+const chMeta=c=>`${imported.size&&!imported.has(c.id)?'<span class="badge">Beispiel</span>':""}${c.pay?'<span class="badge pay">PAY</span>':""}<span class="badge">${c.countries.join("·")}</span>`;
+const flagHtml=p=>[p.fsk?`<span class="badge">FSK ${p.fsk}</span>`:"",...p.flags.map(f=>`<span class="badge${f==="Live"?" live":""}">${esc(f)}</span>`)].join("");
+const chOf=id=>CHANNELS.find(c=>c.id===id);
+const mins=p=>Math.round((p.end-p.start)/6e4);
+
+/* ---------- Ansicht: Jetzt ---------- */
+function renderJetzt(chs){
+  const now=new Date();
+  const cards=chs.map(c=>{
+    const{cur,next}=progAt(c,now);
+    if(!cur)return`<div class="nowcard">${logo(c)}<div class="chn"><span>${esc(c.name)}</span></div>${starBtn(c)}<div class="cur"><span class="meta">Keine Programmdaten</span></div></div>`;
+    const pct=Math.max(0,Math.min(100,(now-cur.start)/(cur.end-cur.start)*100));
+    const left=Math.max(0,Math.round((cur.end-now)/6e4));
+    return`<div class="nowcard">${logo(c)}<div class="chn"><span>${esc(c.name)}</span>${chMeta(c)}</div>${starBtn(c)}
+      <button class="cur" data-p="${esc(cur.id)}"><span class="tt">${esc(cur.title)}</span>
+        <span class="meta"><span class="time">${hm(cur.start)}–${hm(cur.end)}</span><span>${esc(cur.genre)}</span><span>noch ${left} Min.</span>${cur.flags.includes("Live")?'<span class="badge live">LIVE</span>':""}</span>
+        <div class="bar" role="progressbar" aria-valuenow="${Math.round(pct)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></button>
+      ${next?`<button class="nxt" data-p="${esc(next.id)}"><span class="time">${hm(next.start)}</span><span>${esc(next.title)}</span></button>`:""}</div>`}).join("");
+  return`<div class="note">${noteText()}</div><div class="nowgrid">${cards||'<p class="empty">Keine Sender für diese Filter.</p>'}</div>`;
+}
+function noteText(){
+  const n=imported.size;
+  if(S.loading)return`<span><b>Aktuelle Programmdaten werden geladen …</b> Bis dahin siehst du ein Beispielprogramm.</span>`;
+  return n?`<span><b>Echte Programmdaten für ${n} Sender${S.stand?", Stand "+S.stand:""}.</b> Sender mit dem Hinweis „Beispiel“ haben keine Datenquelle und zeigen ein generiertes Programm.</span>`
+   :`<span><b>Beispielprogramm.</b> Die Sendungen sind generiert, damit du die Bedienung testen kannst. Echte Daten lädst du über „XMLTV laden“ (z.&nbsp;B. eine Datei aus deinem Receiver, Plex, Kodi oder einem EPG-Dienst).</span>`;
+}
+
+/* ---------- Ansicht: Raster ---------- */
+let PPM=4;
+function renderRaster(chs){
+  PPM=innerWidth<640?3:4;
+  const d0=dayStart(S.day),W=1440*PPM,q=S.q.toLowerCase();
+  let ticks="";for(let i=0;i<48;i++){const d=addMin(d0,i*30);ticks+=`<span class="${i%2?"half":""}" style="left:${i*30*PPM}px;width:${30*PPM}px">${i%2?"":hm(d)}</span>`}
+  const now=new Date();
+  const rows=chs.map(c=>{
+    const blocks=schedule(c,S.day).map(p=>{
+      const s=Math.max(0,(p.start-d0)/6e4),e=Math.min(1440,(p.end-d0)/6e4);const w=(e-s)*PPM;if(w<=0)return"";
+      const cls=["pg",p.end<=now?"past":"",p.start<=now&&p.end>now?"on":"",q.length>1&&p.title.toLowerCase().includes(q)?"hit":"",hm(p.start)==="20:15"?"prime":"",w<70?"tiny":""].join(" ");
+      return`<button class="${cls}" style="left:${s*PPM+1}px;width:${w-2}px" data-p="${esc(p.id)}" title="${esc(hm(p.start)+" "+p.title)}"><span class="t">${hm(p.start)}</span><span class="n">${esc(p.title)}</span></button>`}).join("");
+    return`<div class="grow"><div class="gch">${logo(c)}<span class="nm">${esc(c.name)}<small>${imported.size&&!imported.has(c.id)?"Beispiel · ":""}${c.pay?"Pay-TV · ":""}${c.countries.join("·")}</small></span></div><div class="track" style="width:${W}px">${blocks}</div></div>`}).join("");
+  const nowOff=(now-d0)/6e4;
+  const line=nowOff>=0&&nowOff<=1440?`<div class="nowline" id="nowline" style="left:calc(var(--chw) + ${nowOff*PPM}px)"></div>`:"";
+  return`<div class="note">${noteText()}</div><div class="gridbox" id="gridbox"><div class="ginner" style="width:calc(var(--chw) + ${W}px)">
+    <div class="ghead"><div class="corner"><button data-jump="now">Jetzt</button><button data-jump="prime">20:15</button></div><div class="ticks" style="width:${W}px">${ticks}</div></div>
+    ${rows||'<p class="empty">Keine Sender für diese Filter.</p>'}${line}</div></div>`;
+}
+function jump(where){
+  const box=$("#gridbox");if(!box)return;const d0=dayStart(S.day);let t;
+  if(where==="now"){t=(new Date()-d0)/6e4;if(t<0||t>1440)t=m("20:15")}else t=m(where==="prime"?"20:15":where);
+  box.scrollTo({left:Math.max(0,t*PPM-60),behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"});
+}
+
+/* ---------- Ansicht: 20:15 ---------- */
+function renderPrime(chs){
+  const at=addMin(dayStart(S.day),m("20:15")+5);
+  const items=chs.map(c=>{const{cur}=progAt(c,at);return cur?{c,p:cur}:null}).filter(Boolean);
+  const score=x=>(x.p.flags.includes("Live")?4:0)+(x.p.flags.includes("Neu")?2:0)+(/film/i.test(x.p.genre)||FILMS.some(f=>f[0]===x.p.title)?2:0)+(x.p.genre==="Krimi"?1.5:0)+(S.favs.has(x.c.id)?2:0)+(hash(x.p.id)%100)/100;
+  const tipps=[...items].filter(x=>(!imported.size||imported.has(x.c.id))&&!["Nachrichten","Shopping","Wetter","Musik"].includes(x.p.genre)).sort((a,b)=>score(b)-score(a)).slice(0,4);
+  const d=dayStart(S.day);
+  return`<div class="note">${noteText()}</div>
+  <h2 class="sectionhead">Tipps für ${WDL[d.getDay()]}abend<small>${fmtDay(d)} · Was um 20:15 läuft</small></h2>
+  <div class="tipps">${tipps.map(({c,p})=>`<button class="tipp" data-p="${esc(p.id)}"><span class="k">${esc(c.name)} · ${hm(p.start)}${p.flags.includes("Live")?" · Live":""}</span><span class="tt">${esc(p.title)}</span><span class="sb">${esc(p.sub||p.genre)}</span></button>`).join("")}</div>
+  <h2 class="sectionhead">Alle Sender<small>${items.length} Sender</small></h2>
+  <div class="primegrid">${items.map(({c,p})=>`<button class="pcard" data-p="${esc(p.id)}"><span class="h">${logo(c)}<span>${esc(c.name)}</span>${chMeta(c)}</span>
+    <span class="time">${hm(p.start)}–${hm(p.end)}</span><span class="tt">${esc(p.title)}</span>${p.sub?`<span class="sb">${esc(p.sub)}</span>`:""}<span class="ds">${esc(p.desc)}</span><span class="fl"><span class="badge">${esc(p.genre)}</span>${flagHtml(p)}</span></button>`).join("")||'<p class="empty">Keine Sender für diese Filter.</p>'}</div>`;
+}
+
+/* ---------- Suche ---------- */
+function renderSearch(chs){
+  const q=S.q.toLowerCase();const res=[];const now=new Date();
+  const chHits=CHANNELS.filter(c=>c.name.toLowerCase().includes(q));
+  const keys=[S.view==="jetzt"?today():S.day];if(keys[0]===today())keys.push(addDays(today(),1));
+  for(const c of chs)for(const k of keys)for(const p of schedule(c,k))if(p.end>now&&(p.title.toLowerCase().includes(q)||p.sub.toLowerCase().includes(q)))res.push({c,p});
+  res.sort((a,b)=>a.p.start-b.p.start);
+  return`${chHits.length?`<h2 class="sectionhead">Sender<small>${chHits.length} Treffer</small></h2><div class="filters" style="padding-bottom:6px">${chHits.map(c=>`<button class="chip" data-gotoch="${c.id}">${esc(c.name)}</button>`).join("")}</div>`:""}
+  <h2 class="sectionhead">Sendungen mit „${esc(S.q)}“<small>${res.length>60?"die ersten 60 von "+res.length:res.length} Treffer, ab jetzt</small></h2>
+  <div class="results">${res.slice(0,60).map(({c,p})=>`<button class="res" data-p="${esc(p.id)}">${logo(c)}<span class="time">${fmtDay(p.start)}<br>${hm(p.start)}</span><span class="tt">${esc(p.title)}<small>${esc(c.name)} · ${esc(p.sub||p.genre)}</small></span><span>${flagHtml(p)}</span></button>`).join("")||'<p class="empty">Keine Sendung gefunden. Probiere einen anderen Begriff oder lockere die Filter.</p>'}</div>`;
+}
+
+/* ---------- Haupt-Render ---------- */
+function renderDays(){
+  const t=today();let h="";
+  for(let i=-1;i<7;i++){const k=addDays(t,i),d=dayStart(k);const lbl=i===0?"Heute":i===1?"Morgen":i===-1?"Gestern":WDL[d.getDay()];
+    h+=`<button data-day="${k}" aria-pressed="${k===S.day}"><b>${lbl}</b><span>${pad(d.getDate())}.${pad(d.getMonth()+1)}.</span></button>`}
+  $("#days").innerHTML=h;$("#days").setAttribute("aria-disabled",S.view==="jetzt");
+}
+function renderFilters(){
+  for(const[id,val]of[["#fCountry",S.country],["#fRecv",S.recv]])$(id).querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===val));
+  $("#fFav").setAttribute("aria-pressed",S.favOnly);
+  $("#fCats").innerHTML=Object.entries(CAT).map(([k,v])=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cats.has(k)}">${v}</button>`).join("");
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===S.view));
+  $("#merkN").textContent=S.merk.length;
+}
+function render(keepScroll){
+  renderDays();renderFilters();
+  const chs=visibleChannels();const main=$("#main");
+  const prev=$("#gridbox")?{l:$("#gridbox").scrollLeft,t:$("#gridbox").scrollTop}:null;
+  if(S.q.length>1&&S.view!=="raster")main.innerHTML=renderSearch(chs);
+  else main.innerHTML=S.view==="jetzt"?renderJetzt(chs):S.view==="raster"?renderRaster(chs):renderPrime(chs);
+  if(S.view==="raster"){if(keepScroll&&prev){$("#gridbox").scrollLeft=prev.l;$("#gridbox").scrollTop=prev.t}else requestAnimationFrame(()=>{const b=$("#gridbox");if(!b)return;const d0=dayStart(S.day);let t=(new Date()-d0)/6e4;if(t<0||t>1440)t=m("20:15");b.scrollLeft=Math.max(0,t*PPM-60)})}
+  save();
+}
+
+/* ---------- Detail & Merkliste ---------- */
+let lastFocus=null;
+function openLayer(html){lastFocus=document.activeElement;$("#layer").innerHTML=`<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-modal="true">${html}</aside>`;const x=$("#layer .x");x&&x.focus()}
+function closeLayer(){$("#layer").innerHTML="";lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function isMerk(id){return S.merk.some(x=>x.id===id)}
+function openDetail(id){
+  const p=findProg(id);if(!p)return;const c=chOf(p.ch);const now=new Date();
+  const state=p.end<=now?"Bereits gelaufen":p.start<=now?`Läuft seit ${Math.round((now-p.start)/6e4)} Min.`:`Beginnt in ${fmtIn(p.start-now)}`;
+  const l=schedule(c,broadcastKey(p.start));const i=l.indexOf(p);const more=l.slice(i+1,i+5);
+  setTimeout(()=>{const im=document.querySelector(".pimg");im&&im.addEventListener("error",()=>im.remove())});
+  openLayer(`<div class="dhead">${logo(c)}<b>${esc(c.name)}</b>${chMeta(c)}<button class="x" data-close aria-label="Schließen">×</button></div>
+  <div class="dbody"><div class="when"><span class="time">${fmtDay(p.start)} · ${hm(p.start)}–${hm(p.end)}</span><span>${mins(p)} Min.</span><span class="badge">${esc(state)}</span></div>
+   ${p.img?`<img class="pimg" src="${esc(p.img)}" alt="" loading="lazy">`:""}<h2>${esc(p.title)}</h2>${p.sub?`<div class="sub">${esc(p.sub)}</div>`:""}
+   <div class="fl" style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge">${esc(p.genre)}</span>${flagHtml(p)}</div>
+   <p>${esc(p.desc||"Keine Beschreibung vorhanden.")}</p>
+   <dl class="facts"><dt>Sender</dt><dd>${esc(c.name)} (${c.pay?"Pay-TV":"Free-TV"}, ${c.countries.join(", ")})</dd>${p.year?`<dt>Produktion</dt><dd>${esc(p.country)} ${p.year}</dd>`:""}<dt>Quelle</dt><dd>${p.src==="xmltv"?"XMLTV-Import":"Beispielprogramm"}</dd></dl>
+   <div class="cta">${p.end>now?`<button class="btn${isMerk(p.id)?" ghost":""}" data-merk="${esc(p.id)}">${isMerk(p.id)?"Von Merkliste entfernen":"Auf Merkliste setzen"}</button>`:""}<button class="btn ghost" data-showch="${c.id}">Sender im Raster</button></div>
+   ${more.length?`<div class="mini"><h3>Danach auf ${esc(c.name)}</h3>${more.map(x=>`<button data-p="${esc(x.id)}"><span class="time">${hm(x.start)}</span><span>${esc(x.title)}</span></button>`).join("")}</div>`:""}
+  </div>`);
+}
+function fmtIn(ms){const mi=Math.round(ms/6e4);if(mi<60)return mi+" Min.";const h=Math.floor(mi/60);if(h<24)return h+" Std. "+(mi%60)+" Min.";return Math.round(h/24)+" Tagen"}
+function toggleMerk(id){
+  if(isMerk(id))S.merk=S.merk.filter(x=>x.id!==id);
+  else{const p=findProg(id);if(!p)return;S.merk.push({id:p.id,ch:p.ch,title:p.title,sub:p.sub,start:+p.start,end:+p.end});S.merk.sort((a,b)=>a.start-b.start);toast("Gemerkt: "+p.title+" um "+hm(p.start))}
+  save();renderFilters();
+}
+function openMerk(){
+  const now=Date.now();S.merk=S.merk.filter(x=>x.end>now);save();renderFilters();
+  openLayer(`<div class="dhead"><b style="font-family:var(--f-display);font-stretch:80%;font-size:20px">Merkliste</b><button class="x" data-close aria-label="Schließen">×</button></div>
+  <div class="dbody">${S.merk.length?`<div class="mlist">${S.merk.map(x=>{const c=chOf(x.ch)||{name:x.ch,short:"?",color:"#666"};const d=new Date(x.start);
+    return`<div class="mitem">${logo(c)}<button class="tt" data-p="${esc(x.id)}"><b>${esc(x.title)}</b><small>${fmtDay(d)} ${hm(d)} · ${esc(c.name)}</small></button><button class="rm" data-unmerk="${esc(x.id)}">Entfernen</button></div>`}).join("")}</div>
+    <p style="font-size:13px;color:var(--muted)">Solange diese Seite offen ist, erinnert dich der Programmkompass fünf Minuten vor Beginn.</p>`
+   :`<p class="empty" style="padding:20px 0">Noch nichts gemerkt. Öffne eine Sendung und tippe auf „Auf Merkliste setzen“.</p>`}</div>`);
+}
+let toastT;function toast(msg){let t=$(".toast");if(!t){t=document.createElement("div");t.className="toast";t.setAttribute("role","status");document.body.appendChild(t)}t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3800)}
+const reminded=new Set();
+function checkReminders(){const now=Date.now();for(const x of S.merk){if(!reminded.has(x.id)&&x.start>now&&x.start-now<=5*6e4){reminded.add(x.id);const c=chOf(x.ch);toast(`Gleich: ${x.title} um ${hm(new Date(x.start))} auf ${c?c.name:x.ch}`)}}}
+
+/* ---------- XMLTV-Import ---------- */
+const norm=s=>s.toLowerCase().replace(/\b(hd|uhd|fhd|sd|deutschland|germany|österreich|austria|schweiz|switzerland|\(de\)|\(at\)|\(ch\))\b/g,"").replace(/[^a-z0-9äöüß+]/g,"");
+function parseXT(s){const mt=s.match(/^(\d{4})(\d\d)(\d\d)(\d\d)(\d\d)(\d\d)?\s*([+-]\d{4})?/);if(!mt)return null;const[_,y,mo,d,h,mi,se,tz]=mt;
+  if(tz){const sign=tz[0]==="-"?-1:1;const off=sign*(+tz.slice(1,3)*60+ +tz.slice(3));return new Date(Date.UTC(+y,mo-1,+d,+h,+mi,+(se||0))-off*6e4)}return new Date(+y,mo-1,+d,+h,+mi,+(se||0))}
+function importXML(text){
+  const doc=new DOMParser().parseFromString(text,"application/xml");
+  if(doc.querySelector("parsererror"))throw new Error("Die Datei ist kein gültiges XML.");
+  const map=new Map();const byNorm=new Map(CHANNELS.map(c=>[norm(c.name),c]));CHANNELS.forEach(c=>byNorm.set(norm(c.short),byNorm.get(norm(c.short))||c));
+  let added=0;
+  doc.querySelectorAll("channel").forEach(el=>{const xid=el.getAttribute("id");const names=[...el.querySelectorAll("display-name")].map(n=>n.textContent.trim());
+    let c=CHANNELS.find(x=>x.id===xid)||null;if(!c)for(const n of names.concat([xid])){c=byNorm.get(norm(n||""));if(c)break}
+    if(!c){c={id:"x_"+hash(xid).toString(36),name:names[0]||xid,short:(names[0]||xid).slice(0,5),countries:["DE"],pay:false,cat:"musik",color:"#556",p:"series",importedOnly:true};CHANNELS.push(c);added++}
+    map.set(xid,c)});
+  const progs=new Map();let n=0;
+  doc.querySelectorAll("programme").forEach(el=>{const c=map.get(el.getAttribute("channel"));if(!c)return;const st=parseXT(el.getAttribute("start")||""),en=parseXT(el.getAttribute("stop")||"");if(!st)return;
+    const txt=sel=>{const x=el.querySelector(sel);return x?x.textContent.trim():""};
+    const rating=txt("rating value");const cat=txt("category");const epn=[...el.querySelectorAll("episode-num")].find(x=>x.getAttribute("system")==="onscreen");const ic=el.querySelector("icon");let sub=txt("sub-title");if(!sub&&epn){const mm=epn.textContent.match(/S(\d+)E(\d+)/);if(mm)sub="Staffel "+(+mm[1])+", Folge "+(+mm[2])}
+    const p={noStop:!en,id:c.id+"|"+broadcastKey(st)+"|"+st.getTime(),ch:c.id,start:st,end:en||addMin(st,30),title:txt("title")||"Ohne Titel",sub,img:ic?ic.getAttribute("src").replace(/^http:/,"https:"):"",genre:cat||"Sendung",desc:txt("desc"),fsk:+(rating.match(/\d+/)||[0])[0],flags:[...(el.querySelector("premiere")?["Premiere"]:[]),...(el.querySelector("previously-shown")?["Wdh."]:[]),...(el.querySelector("new")?["Neu"]:[]),...(el.querySelector("subtitles")?["UT"]:[])],year:txt("date").slice(0,4)||undefined,country:txt("country"),src:"xmltv"};
+    if(!progs.has(c.id))progs.set(c.id,[]);progs.get(c.id).push(p);n++});
+  for(const[id,l]of progs){l.sort((a,b)=>a.start-b.start);for(let i=0;i<l.length-1;i++)if(l[i].noStop)l[i].end=l[i+1].start;imported.set(id,l)}
+  cache.clear();
+  return{channels:progs.size,programmes:n,added};
+}
+
+/* ---------- Ereignisse ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-close]");if(!t)return;
+  if(t.dataset.close!==undefined){closeLayer();return}
+  if(t.dataset.view){S.view=t.dataset.view;if(S.view==="jetzt")S.day=today();render();return}
+  if(t.dataset.day){S.day=t.dataset.day;render();return}
+  if(t.dataset.cat){const k=t.dataset.cat;S.cats.has(k)?S.cats.delete(k):S.cats.add(k);render(true);return}
+  if(t.dataset.v){const seg=t.parentElement.id;if(seg==="fCountry")S.country=t.dataset.v;if(seg==="fRecv")S.recv=t.dataset.v;render(true);return}
+  if(t.id==="fFav"){S.favOnly=!S.favOnly;render(true);return}
+  if(t.dataset.fav){const id=t.dataset.fav;S.favs.has(id)?S.favs.delete(id):S.favs.add(id);render(true);return}
+  if(t.dataset.p){openDetail(t.dataset.p);return}
+  if(t.dataset.merk){const id=t.dataset.merk;toggleMerk(id);openDetail(id);return}
+  if(t.dataset.unmerk){toggleMerk(t.dataset.unmerk);openMerk();return}
+  if(t.dataset.jump){jump(t.dataset.jump);return}
+  if(t.dataset.showch||t.dataset.gotoch){const id=t.dataset.showch||t.dataset.gotoch;closeLayer();S.view="raster";S.q="";$("#q").value="";S.cats.clear();S.country="all";S.recv="all";S.favOnly=false;render();
+    requestAnimationFrame(()=>{const rows=[...document.querySelectorAll(".grow")];const idx=visibleChannels().findIndex(c=>c.id===id);if(idx>=0&&rows[idx]){const b=$("#gridbox");b.scrollTop=rows[idx].offsetTop-40;rows[idx].querySelector(".gch").style.background="var(--accent-soft)"}});return}
+  if(t.id==="btnMerk"){openMerk();return}
+  if(t.id==="btnImport"){$("#file").click();return}
+});
+$("#file").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const res=importXML(r.result);toast(res.programmes?`${res.programmes} Sendungen für ${res.channels} Sender geladen${res.added?` (${res.added} neue Sender)`:""}.`:"In der Datei wurden keine Sendungen gefunden.");render()}catch(err){toast("Import fehlgeschlagen: "+err.message)}};
+  r.onerror=()=>toast("Die Datei konnte nicht gelesen werden.");r.readAsText(f);e.target.value=""});
+let qT;$("#q").addEventListener("input",e=>{clearTimeout(qT);qT=setTimeout(()=>{S.q=e.target.value.trim();render(true)},180)});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&$("#layer").innerHTML){closeLayer();return}
+  if(e.key==="/"&&document.activeElement.tagName!=="INPUT"){e.preventDefault();$("#q").focus()}
+});
+
+/* ---------- Uhr & Live-Aktualisierung ---------- */
+function tick(){
+  const now=new Date();$("#clock").textContent=hm(now);
+  if(broadcastKey(now)!==tick.k){const was=tick.k;tick.k=broadcastKey(now);if(was){if(S.view==="jetzt")S.day=tick.k;render(true)}}
+  checkReminders();
+}
+let lastMin=-1;
+setInterval(()=>{tick();const mi=new Date().getMinutes();if(mi!==lastMin){lastMin=mi;if(!$("#layer").innerHTML&&document.activeElement!==$("#q")){if(S.view==="jetzt")render(true);else if(S.view==="raster"){const nl=$("#nowline");if(nl){const off=(new Date()-dayStart(S.day))/6e4;nl.style.left=`calc(var(--chw) + ${off*PPM}px)`}}}}},15000);
+tick.k=broadcastKey(new Date());tick();lastMin=new Date().getMinutes();
+async function autoLoad(){
+  S.loading=true;render();
+  try{const r=await fetch("guide.xml",{cache:"no-cache"});
+    if(r.ok){const res=importXML(await r.text());const lm=r.headers.get("last-modified");
+      if(lm){const d=new Date(lm);S.stand=fmtDay(d)+" "+hm(d)}}
+  }catch(e){}
+  S.loading=false;render(true);
+}
+if(location.protocol.startsWith("http"))autoLoad();else render();
+})();
+</script>
+
+</body>
+</html>
