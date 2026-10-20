@@ -37,6 +37,14 @@ jobs:
           mkdir -p site
           cd epg && npm run grab --- --channels=../channels.xml --output=../site/guide.xml --days=7 --maxConnections=4
 
+      - name: Zusatzquelle epg.best einmischen (optional)
+        env:
+          EPG_BEST_URL: ${{ secrets.EPG_BEST_URL }}
+        run: |
+          if [ -z "$EPG_BEST_URL" ]; then echo "Kein EPG_BEST_URL gesetzt – übersprungen"; exit 0; fi
+          curl -sfL --retry 3 "$EPG_BEST_URL" -o extra.xml || { echo "Download fehlgeschlagen – übersprungen"; exit 0; }
+          node scripts/merge-extra.mjs extra.xml site/guide.xml
+
       - name: Ergebnis prüfen
         run: |
           n=$(grep -c "<programme" site/guide.xml || true)
