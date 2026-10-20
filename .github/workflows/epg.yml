@@ -43,10 +43,19 @@ jobs:
         run: |
           if [ -z "$EPG_BEST_URL" ]; then echo "Kein EPG_BEST_URL gesetzt – übersprungen"; exit 0; fi
           URL=$(printf '%s' "$EPG_BEST_URL" | tr -d '[:space:]')
-          code=$(curl -sL --retry 3 -A "Mozilla/5.0" -o extra.xml -w '%{http_code} %{content_type} %{size_download}' "$URL" || echo "curl-Fehler $?")
-          echo "Antwort epg.best: $code"
-          head -c 200 extra.xml | tr -d '\000' | sed 's/^/  Anfang: /'; echo
-          case "$code" in 200*) ;; *) echo "Download fehlgeschlagen – übersprungen"; exit 0;; esac
+          echo "::add-mask::$URL"
+          get() { curl -sL --retry 3 -A "Mozilla/5.0" -o "$2" -w '%{http_code}' "$1" || echo "000"; }
+          code=$(get "$URL" extra.xml)
+          echo "Antwort epg.best: HTTP $code"
+          # Ist es eine M3U-Playlist, steht der eigentliche EPG-Link in url-tvg
+          if head -c 7 extra.xml | grep -q '#EXTM3U'; then
+            EPG=$(head -1 extra.xml | grep -oE 'url-tvg="[^"]+"' | head -1 | cut -d'"' -f2)
+            [ -z "$EPG" ] && { echo "Playlist ohne EPG-Link – übersprungen"; exit 0; }
+            echo "::add-mask::$EPG"
+            code=$(get "$EPG" extra.xml)
+            echo "Antwort EPG-Datei: HTTP $code"
+          fi
+          [ "$code" = "200" ] || { echo "Download fehlgeschlagen – übersprungen"; exit 0; }
           node scripts/merge-extra.mjs extra.xml site/guide.xml
 
       - name: Ergebnis prüfen
